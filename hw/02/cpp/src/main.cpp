@@ -54,10 +54,10 @@ int main(int argc, const char * argv[]) {
   input.close();
 
   //-- get total number of RoofSurface in the file
-  // int noroofsurfaces = get_no_roof_surfaces(j);
-  // std::cout << "Total RoofSurface: " << noroofsurfaces << std::endl;
+   int noroofsurfaces = get_no_roof_surfaces(j);
+   std::cout << "Total RoofSurface: " << noroofsurfaces << std::endl;
 
-  // list_all_vertices(j);
+//  list_all_vertices(j);
 
   visit_roofsurfaces(j);
 
