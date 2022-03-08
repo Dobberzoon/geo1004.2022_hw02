@@ -1,0 +1,3 @@
+/Users/leokan/Documents/TUDelft/GEO1004-2022/3d-hw/hw2/geo1004.2022_hw02/hw/02/cpp/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/leokan/Documents/TUDelft/GEO1004-2022/3d-hw/hw2/geo1004.2022_hw02/hw/02/cpp/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/leokan/Documents/TUDelft/GEO1004-2022/3d-hw/hw2/geo1004.2022_hw02/hw/02/cpp/cmake-build-debug/CMakeFiles/cjdemo.dir
