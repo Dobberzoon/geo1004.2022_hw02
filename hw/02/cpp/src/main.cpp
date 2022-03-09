@@ -88,9 +88,18 @@ int main(int argc, const char * argv[]) {
   o.close();
 
 //  int mat[N][N] = {{2, 1, 3}, {6, 5, 7}, {4, 9, 8}};
+
+// For this the determinant will be positive
+/*    int mat[N][N] = {{ 1,  1,  1,  1},
+                       {-1,  1, -1,  1},
+                       {-1, -1,  1,  1},
+                       { 1, -1, -1,  1}};*/
+
+// For this the determinant will be negative
+
   int mat[N][N] = {{ 1,  1,  1,  1},
-                   {-1,  1, -1,  1},
                    {-1, -1,  1,  1},
+                   {-1,  1, -1,  1},
                    { 1, -1, -1,  1}};
   std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
 
