@@ -45,7 +45,7 @@ void  list_all_vertices(json& j);
 void  visit_roofsurfaces(json &j);
 
 
-#define N 3
+
 
 int main(int argc, const char * argv[]) {
 
@@ -87,7 +87,11 @@ int main(int argc, const char * argv[]) {
   o << j.dump(2) << std::endl;
   o.close();
 
-  int mat[N][N] = {{2, 1, 3}, {6, 5, 7}, {4, 9, 8}};
+//  int mat[N][N] = {{2, 1, 3}, {6, 5, 7}, {4, 9, 8}};
+  int mat[N][N] = {{ 1,  1,  1,  1},
+                   {-1,  1, -1,  1},
+                   {-1, -1,  1,  1},
+                   { 1, -1, -1,  1}};
   std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
 
   return 0;
