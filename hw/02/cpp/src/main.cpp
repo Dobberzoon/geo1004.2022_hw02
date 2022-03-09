@@ -97,10 +97,10 @@ int main(int argc, const char * argv[]) {
 
 // For this the determinant will be negative
 
-  int mat[N][N] = {{ 1,  1,  1,  1},
-                   {-1, -1,  1,  1},
-                   {-1,  1, -1,  1},
-                   { 1, -1, -1,  1}};
+  double mat[N][N] = {{ 1.01,  1.01,  1.01,  1.01},
+                   {-1.01, -1.01,  1.01,  1.01},
+                   {-1.01,  1.01, -1.01,  1.01},
+                   { 1.01, -1.01, -1.01,  1.01}};
   std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
 
   return 0;

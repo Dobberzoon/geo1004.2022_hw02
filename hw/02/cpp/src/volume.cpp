@@ -2,10 +2,9 @@
 // Created by Daniël Dobson on 08/03/2022.
 //
 
-#include <iostream>
 #include "volume.h"
 
-void subMatrix(int mat[N][N], int temp[N][N], int p, int q, int n) {
+void subMatrix(double mat[N][N], double temp[N][N], int p, int q, int n) {
     int i = 0, j = 0;
     // filling the sub matrix
     for (int row = 0; row < n; row++) {
@@ -22,15 +21,15 @@ void subMatrix(int mat[N][N], int temp[N][N], int p, int q, int n) {
         }
     }
 }
-int determinantOfMatrix(int matrix[N][N], int n) {
-    int determinant = 0;
+double determinantOfMatrix(double matrix[N][N], int n) {
+    double determinant = 0.;
     if (n == 1) {
         return matrix[0][0];
     }
     if (n == 2) {
         return (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
     }
-    int temp[N][N], sign = 1;
+    double temp[N][N], sign = 1;
     for (int i = 0; i < n; i++) {
         subMatrix(matrix, temp, 0, i, n);
         determinant += sign * matrix[0][i] * determinantOfMatrix(temp, n - 1);
@@ -38,5 +37,7 @@ int determinantOfMatrix(int matrix[N][N], int n) {
     }
     return determinant;
 }
+
+
 
 

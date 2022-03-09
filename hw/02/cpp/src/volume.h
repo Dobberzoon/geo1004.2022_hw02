@@ -8,7 +8,7 @@
 
 const int N = 4;
 
-void subMatrix(int mat[N][N], int temp[N][N], int p, int q, int n);
-int determinantOfMatrix(int matrix[N][N], int n);
+void subMatrix(double mat[N][N], double temp[N][N], int p, int q, int n);
+double determinantOfMatrix(double matrix[N][N], int n);
 
 #endif //CJDEMO_VOLUME_H
