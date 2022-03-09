@@ -10,6 +10,6 @@ set(${PROJECT_NAME}_VERSION_MINOR 0)
 include_directories( ${CMAKE_SOURCE_DIR}/include/ )
 
 FILE(GLOB SRC_FILES src/*.cpp)
-add_executable(cjdemo ${SRC_FILES})
+add_executable(cjdemo ${SRC_FILES} src/volume.cpp src/volume.h)
 
 target_link_libraries(${PROJECT_NAME})
