@@ -87,6 +87,47 @@ int main(int argc, const char * argv[]) {
   o << j.dump(2) << std::endl;
   o.close();
 
+  std::string file_in = "../../data/big_tetrahedron.obj";
+
+  // ## Read OBJ file ##
+  // The vertices and faces are read and stored into vectors.
+
+  std::vector<std::vector<double>> vertices;
+  std::vector<std::vector<int>> face_indices;
+
+  readObj(file_in, vertices, face_indices);
+
+  std::cout << "size of vertices: " << vertices.size() << "\n";
+  std::cout << "all the vertices of: " << file_in << "\n";
+
+  for (int i = 0; i < vertices.size(); i++) {
+      std::cout << "vertex " << i << ":";
+      for (auto j : vertices[i]) {std::cout << " " << j;}
+      std::cout << "\n";
+  }
+
+    std::cout << "all the face indices of: " << file_in << "\n";
+
+  for (auto i : face_indices) {
+      for (auto j: i) { std::cout << " " << j; }
+      std::cout << "\n";
+  }
+
+  double mat_import[N][N];
+
+  // filling matrix from obj vertex list (will be similar to vertex list from json)
+  initMatrix4x4(mat_import, vertices, N);
+
+  std::cout << "all the contents of mat_import:\n";
+
+  for (int i = 0; i < N; i++) {
+      for (int j = 0; j < N; j++) {
+          std::cout << mat_import[i][j] << " ";
+      }
+      std::cout << "\n";
+  }
+
+
 //  int mat[N][N] = {{2, 1, 3}, {6, 5, 7}, {4, 9, 8}};
 
 // For this the determinant will be positive
@@ -95,13 +136,14 @@ int main(int argc, const char * argv[]) {
                        {-1, -1,  1,  1},
                        { 1, -1, -1,  1}};*/
 
-// For this the determinant will be negative
+// For this the determinant will be negative, and double precision
 
   double mat[N][N] = {{ 1.01,  1.01,  1.01,  1.01},
                    {-1.01, -1.01,  1.01,  1.01},
                    {-1.01,  1.01, -1.01,  1.01},
                    { 1.01, -1.01, -1.01,  1.01}};
   std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
+    std::cout << "Determinant of " << file_in << ": " << determinantOfMatrix(mat_import, N) << std::endl;
 
   return 0;
 }
