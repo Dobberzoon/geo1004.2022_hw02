@@ -5,10 +5,6 @@
 #include <iostream>
 #include "volume.h"
 
-// C++ program to find Determinant of a matrix
-using namespace std;
-
-
 void subMatrix(int mat[N][N], int temp[N][N], int p, int q, int n) {
     int i = 0, j = 0;
     // filling the sub matrix
