@@ -50,7 +50,7 @@ void  visit_roofsurfaces(json &j);
 int main(int argc, const char * argv[]) {
 
   //-- reading the file with nlohmann json: https://github.com/nlohmann/json  
-  std::ifstream input("../../data/twobuildings.city.json");
+  std::ifstream input("../../data/myfile_new.triangulated.city.json");
   json j;
   input >> j;
   input.close();
@@ -116,7 +116,7 @@ int main(int argc, const char * argv[]) {
   double mat_import[N][N];
 
   // filling matrix from obj vertex list (will be similar to vertex list from json)
-  initMatrix4x4(mat_import, vertices, N);
+  fillMatrix4x4(mat_import, vertices, N);
 
   std::cout << "all the contents of mat_import:\n";
 
@@ -138,11 +138,11 @@ int main(int argc, const char * argv[]) {
 
 // For this the determinant will be negative, and double precision
 
-  double mat[N][N] = {{ 1.01,  1.01,  1.01,  1.01},
-                   {-1.01, -1.01,  1.01,  1.01},
-                   {-1.01,  1.01, -1.01,  1.01},
-                   { 1.01, -1.01, -1.01,  1.01}};
-  std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
+    double mat[N][N] = {{ 1.01,  1.01,  1.01,  1.01},
+                        {-1.01, -1.01,  1.01,  1.01},
+                        {-1.01,  1.01, -1.01,  1.01},
+                        { 1.01, -1.01, -1.01,  1.01}};
+    std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
     std::cout << "Determinant of " << file_in << ": " << determinantOfMatrix(mat_import, N) << std::endl;
 
   return 0;

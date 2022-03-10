@@ -22,18 +22,6 @@ void subMatrix(double (&mat)[N][N], double (&temp)[N][N], int p, int q, int n) {
     }
 }
 
-void initMatrix4x4(double (&mat)[N][N], std::vector<std::vector<double>> &vertices, int n){
-    // filling matrix from obj vertex list (will be similar to vertex list from json)
-
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (j == (n - 1)) {mat[i][j] = 1.;}
-            else {mat[i][j] = vertices[i][j];}
-        }
-    }
-
-}
-
 double determinantOfMatrix(double (&matrix)[N][N], int n) {
     double determinant = 0.;
     if (n == 1) {
@@ -49,6 +37,18 @@ double determinantOfMatrix(double (&matrix)[N][N], int n) {
         sign = -sign;
     }
     return determinant;
+}
+
+void fillMatrix4x4(double (&mat)[N][N], std::vector<std::vector<double>> &vertices, int n){
+    // filling matrix from obj vertex list (will be similar to vertex list from json)
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (j == (n - 1)) {mat[i][j] = 1.;}
+            else {mat[i][j] = vertices[i][j];}
+        }
+    }
+
 }
 
 void readObj(std::string &file_in, std::vector<std::vector<double>> &vertices, std::vector<std::vector<int>> &face_indices) {
