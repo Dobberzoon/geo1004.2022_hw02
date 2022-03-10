@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <string>
 #include "json.hpp"
 #include "volume.h"
@@ -54,6 +55,32 @@ int main(int argc, const char * argv[]) {
   json j;
   input >> j;
   input.close();
+
+  // get transform values
+
+  auto scale = j["transform"]["scale"];
+  double translate = j["transform"]["translate"][0];
+  std::cout << "scale values: " << scale << std::endl;
+  std::cout << "translate values: " << translate << std::endl;
+
+  // get bbox vertices
+
+  // lower left back coordinate (minx, miny, minz)
+
+  std::cout << "minx " << j["metadata"]["geographicalExtent"][0] << std::endl;
+  double ll[] = {j["metadata"]["geographicalExtent"][0], j["metadata"]["geographicalExtent"][1], j["metadata"]["geographicalExtent"][2]};
+  for(int i=0;i<3;i++)
+      std::cout<<ll[i]<<" ";
+
+  std::cout << "\n";
+
+  // transform coordinates so that they are the same as the other vertices
+  double llx = (j["metadata"]["geographicalExtent"][0].get<double>() - j["transform"]["translate"][0].get<double>()) / j["transform"]["scale"][0].get<double>();
+  double lly = (j["metadata"]["geographicalExtent"][1].get<double>() - j["transform"]["translate"][1].get<double>()) / j["transform"]["scale"][1].get<double>();
+  double llz = (j["metadata"]["geographicalExtent"][2].get<double>() - j["transform"]["translate"][2].get<double>()) / j["transform"]["scale"][2].get<double>();
+  std::cout << "llx: " << llx << std::endl;
+
+  // upper right front coordinate (maxx, maxy, maxz)
 
   //-- get total number of RoofSurface in the file
    int noroofsurfaces = get_no_roof_surfaces(j);
