@@ -27,12 +27,12 @@
 |                                  2022-02-22                                  |
 |                                                                              |
 +------------------------------------------------------------------------------+
-
-              _            _       _                          _
-             | | ___  ___ ( )___  | |__  _ __ __ _ _ __   ___| |__
-             | |/ _ \/ _ \|// __| | '_ \| '__/ _` | '_ \ / __| '_ \
-             | |  __/ (_) | \__ \ | |_) | | | (_| | | | | (__| | | |
-             |_|\___|\___/  |___/ |_.__/|_|  \__,_|_| |_|\___|_| |_|
+     _                 _
+    | |__   ___  _ __ (_)_   _ _ __ ___
+    | '_ \ / _ \| '_ \| | | | | '_ ` _ \
+    | | | | (_) | |_) | | |_| | | | | | |
+    |_| |_|\___/| .__/|_|\__,_|_| |_| |_|
+                |_|
 
 */
 
@@ -47,6 +47,8 @@ int  get_no_roof_surfaces(json &j);
 void list_all_vertices(json& j);
 void visit_roofsurfaces(json &j);
 void height_of_building(json &j);
+void get_roof_height(json &j);
+
 
 int main(int argc, const char * argv[]) {
 
@@ -56,7 +58,8 @@ int main(int argc, const char * argv[]) {
     input >> j;  // std::maps & std::array / std::vector
     input.close();
 
-    height_of_building(j);
+//    height_of_building(j);
+    get_roof_height(j);
 
 
     //  -- get total number of RoofSurface in the file
@@ -99,7 +102,6 @@ int main(int argc, const char * argv[]) {
     std::ofstream o("area.city.json");
     o << j.dump(2) << std::endl;
     o.close();
-
     return 0;
 }
 
@@ -126,22 +128,33 @@ void visit_roofsurfaces(json &j) {
 
 // Returns the number of 'RooSurface' in the CityJSON model
 int get_no_roof_surfaces(json &j) {
-  int total = 0;
-  for (auto& co : j["CityObjects"].items()) {
-    for (auto& g : co.value()["geometry"]) {
-      if (g["type"] == "Solid") {
-        for (auto& shell : g["semantics"]["values"]) {
-          for (auto& s : shell) {
-            if (g["semantics"]["surfaces"][s.get<int>()]["type"].get<std::string>().compare("RoofSurface") == 0) {
-              total += 1;
+    int total = 0;
+        for (auto& co : j["CityObjects"].items()) {
+            for (auto& g : co.value()["geometry"]) {
+                if (g["type"] == "Solid") {
+                    for (auto& shell : g["semantics"]["values"]) {
+                        for (auto& s : shell) {
+                            if (g["semantics"]["surfaces"][s.get<int>()]["type"].get<std::string>().compare("RoofSurface") == 0) {
+                                total += 1;
+                            }
+                        }
+                    }
+                }
             }
-          }
         }
-      }
-    }
-  }
-  return total;
+        return total;
 }
+
+void get_roof_height(json &j) {
+    for (auto &co: j["CityObjects"].items()) {
+        for (auto &g: co.value()["attributes"]) {
+            std::cout << g["h_dak_max"] << std::endl;
+            std::cout << g["h_dak_min"] << std::endl;
+
+        }
+    }
+}
+
 
 
 // CityJSON files have their vertices compressed: https://www.cityjson.org/specs/1.1.1/#transform-object
@@ -170,13 +183,13 @@ void list_all_vertices(json& j) {
     }
 }
 
-void height_of_building(json &j) {
-    for (auto &co : j["city objects"].items()){
-        std::cout << "= CityObject: " << co.key() << std::endl;
-        for (auto& g : co.value()["geometry"]) {
-            std::cout << "yaya";
-        }
-
-
-        }
-}
+//void height_of_building(json &j) {
+//    for (auto &co : j["city objects"].items()){
+//        std::cout << "= CityObject: " << co.key() << std::endl;
+//        for (auto& g : co.value()["geometry"]) {
+//            std::cout << "yaya";
+//        }
+//
+//
+//        }
+//}
