@@ -34,7 +34,6 @@
              | |  __/ (_) | \__ \ | |_) | | | (_| | | | | (__| | | |
              |_|\___|\___/  |___/ |_.__/|_|  \__,_|_| |_|\___|_| |_|
 
-
 */
 
 #include <iostream>
@@ -44,10 +43,10 @@
 
 using json = nlohmann::json;
 
-int   get_no_roof_surfaces(json &j);
-void  list_all_vertices(json& j);
-void  visit_roofsurfaces(json &j);
-
+int  get_no_roof_surfaces(json &j);
+void list_all_vertices(json& j);
+void visit_roofsurfaces(json &j);
+void height_of_building(json &j);
 
 int main(int argc, const char * argv[]) {
 
@@ -57,14 +56,17 @@ int main(int argc, const char * argv[]) {
     input >> j;  // std::maps & std::array / std::vector
     input.close();
 
+    height_of_building(j);
+
+
     //  -- get total number of RoofSurface in the file
     int noroofsurfaces = get_no_roof_surfaces(j);
     std::cout << "Total RoofSurface: " << noroofsurfaces << std::endl;
 
-    std::cout << "list all vertices" << std::endl;
-    list_all_vertices(j);
+//    std::cout << "list all vertices" << std::endl;
 
-    visit_roofsurfaces(j);
+//    list_all_vertices(j);
+//    visit_roofsurfaces(j);
 
     //-- print out the number of Buildings in the file
     int nobuildings = 0;
@@ -73,6 +75,7 @@ int main(int argc, const char * argv[]) {
           nobuildings += 1;
         }
     }
+
     std::cout << "There are " << nobuildings << " Buildings in the file" << std::endl;
 
     //-- print out the number of vertices in the file
@@ -81,10 +84,16 @@ int main(int argc, const char * argv[]) {
     //-- add an attribute "volume"
     for (auto& co : j["CityObjects"]) {
         if (co["type"] == "Building") {
-          co["attributes"]["volume"] = 8964;
+          co["attributes"]["volume"] = nobuildings;
         }
     }
 
+    //-- add an attribute "height"
+    for (auto& co : j["CityObjects"]) {
+        if (co["type"] == "Building") {
+            co["attributes"]["no_floors"] = 940920;
+        }
+    }
 
     //-- write to disk the modified city model (myfile.city.json)
     std::ofstream o("area.city.json");
@@ -159,4 +168,15 @@ void list_all_vertices(json& j) {
             }
         }
     }
+}
+
+void height_of_building(json &j) {
+    for (auto &co : j["city objects"].items()){
+        std::cout << "= CityObject: " << co.key() << std::endl;
+        for (auto& g : co.value()["geometry"]) {
+            std::cout << "yaya";
+        }
+
+
+        }
 }
