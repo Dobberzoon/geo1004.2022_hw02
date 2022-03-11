@@ -38,7 +38,6 @@
 
 using json = nlohmann::json;
 
-// see here
 
 
 int   get_no_roof_surfaces(json &j);
@@ -51,36 +50,23 @@ void  visit_roofsurfaces(json &j);
 int main(int argc, const char * argv[]) {
 
   //-- reading the file with nlohmann json: https://github.com/nlohmann/json  
-  std::ifstream input("../../data/twobuildings.city.json");
+  std::ifstream input("../../data/triangulated_sample_building.city.json");
   json j;
   input >> j;
   input.close();
 
-  // get transform values
 
-  auto scale = j["transform"]["scale"];
-  double translate = j["transform"]["translate"][0];
-  std::cout << "scale values: " << scale << std::endl;
-  std::cout << "translate values: " << translate << std::endl;
+  // create new vertex outside bbox --> "outside point" for the tetrahedra (stored as an array)
+  double op[] = {j["metadata"]["geographicalExtent"][0].get<double>() - 1,
+          j["metadata"]["geographicalExtent"][1].get<double>() - 1,
+          j["metadata"]["geographicalExtent"][2].get<double>() - 1};
 
-  // get bbox vertices
+  // print the outside point
+  std::cout << "op: ";
+    for(int i=0;i<3;i++)
+        std::cout<<op[i]<<" ";
+    std::cout << "\n";
 
-  // lower left back coordinate (minx, miny, minz)
-
-  std::cout << "minx " << j["metadata"]["geographicalExtent"][0] << std::endl;
-  double ll[] = {j["metadata"]["geographicalExtent"][0], j["metadata"]["geographicalExtent"][1], j["metadata"]["geographicalExtent"][2]};
-  for(int i=0;i<3;i++)
-      std::cout<<ll[i]<<" ";
-
-  std::cout << "\n";
-
-  // transform coordinates so that they are the same as the other vertices
-  double llx = (j["metadata"]["geographicalExtent"][0].get<double>() - j["transform"]["translate"][0].get<double>()) / j["transform"]["scale"][0].get<double>();
-  double lly = (j["metadata"]["geographicalExtent"][1].get<double>() - j["transform"]["translate"][1].get<double>()) / j["transform"]["scale"][1].get<double>();
-  double llz = (j["metadata"]["geographicalExtent"][2].get<double>() - j["transform"]["translate"][2].get<double>()) / j["transform"]["scale"][2].get<double>();
-  std::cout << "llx: " << llx << std::endl;
-
-  // upper right front coordinate (maxx, maxy, maxz)
 
   //-- get total number of RoofSurface in the file
    int noroofsurfaces = get_no_roof_surfaces(j);
@@ -171,6 +157,8 @@ int main(int argc, const char * argv[]) {
                    { 1.01, -1.01, -1.01,  1.01}};
   std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
     std::cout << "Determinant of " << file_in << ": " << determinantOfMatrix(mat_import, N) << std::endl;
+
+    list_all_vertices(j);
 
   return 0;
 }
