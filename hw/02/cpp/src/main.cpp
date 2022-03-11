@@ -41,6 +41,7 @@ using json = nlohmann::json;
 int   get_no_roof_surfaces(json &j);
 void  list_all_vertices(json& j);
 void  visit_roofsurfaces(json &j);
+void no_of_floors (json &j);
 
 
 
@@ -60,6 +61,7 @@ int main(int argc, const char * argv[]) {
   // list_all_vertices(j);
 
   visit_roofsurfaces(j);
+  no_of_floors(j);
 
   //-- print out the number of Buildings in the file
   int nobuildings = 0;
@@ -154,3 +156,22 @@ void list_all_vertices(json& j) {
     }
   }
 }
+
+void no_of_floors(json& j) {
+float hmax;
+float hmin;
+float hgrlvl;
+float rdif;
+    for (auto &co: j["CityObjects"]) {
+
+        if (co["type"] == "Building") {
+            //std::cout << "= CityObject: " << co.key() << std::endl;
+            hmax=co["attributes"]["h_dak_max"];
+            hmin=co["attributes"]["h_dak_min"];
+            hgrlvl=co["attributes"]["h_maaiveld"];
+            rdif=((hmax-hmin)*0.7+(hmin-hgrlvl))/3.0;
+            std::cout<<int(rdif)<<"\n";
+
+            }
+        }
+    }
