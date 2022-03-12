@@ -87,46 +87,58 @@ int main(int argc, const char * argv[]) {
   o << j.dump(2) << std::endl;
   o.close();
 
-  std::string file_in = "../../data/big_tetrahedron.obj";
+  std::string file_in = "../../data/cube_triangulated copy.obj";
 
   // ## Read OBJ file ##
   // The vertices and faces are read and stored into vectors.
 
-  std::vector<std::vector<double>> vertices;
-  std::vector<std::vector<int>> face_indices;
+  std::vector<std::vector<double>> vertices_cube;
+  std::vector<std::vector<int>> face_indices_cube;
 
-  readObj(file_in, vertices, face_indices);
+  readObj(file_in, vertices_cube, face_indices_cube);
 
-  std::cout << "size of vertices: " << vertices.size() << "\n";
-  std::cout << "all the vertices of: " << file_in << "\n";
 
-  for (int i = 0; i < vertices.size(); i++) {
+  std::cout << "size of vertices_cube: " << vertices_cube.size() << "\n";
+  std::cout << "all the vertices_cube of: " << file_in << "\n";
+
+  for (int i = 0; i < vertices_cube.size(); i++) {
       std::cout << "vertex " << i << ":";
-      for (auto j : vertices[i]) {std::cout << " " << j;}
+      for (auto j : vertices_cube[i]) {std::cout << " " << j;}
       std::cout << "\n";
   }
 
     std::cout << "all the face indices of: " << file_in << "\n";
 
-  for (auto i : face_indices) {
+  for (auto i : face_indices_cube) {
       for (auto j: i) { std::cout << " " << j; }
       std::cout << "\n";
   }
 
-  double mat_import[N][N];
-
-  // filling matrix from obj vertex list (will be similar to vertex list from json)
-  fillMatrix4x4(mat_import, vertices, N);
-
-  std::cout << "all the contents of mat_import:\n";
-
-  for (int i = 0; i < N; i++) {
-      for (int j = 0; j < N; j++) {
-          std::cout << mat_import[i][j] << " ";
+  int count_cube_vertices = 0;
+  double volume_sum = 0.;
+  std::vector<double> xyz_far = {-100., -100., -100.};
+  for (auto i : face_indices_cube) {
+      std::vector<std::vector<double>> vertices;
+      for (auto j : i) {
+          std::vector<double> vertex;
+          for (auto k : vertices_cube[j]) {
+              vertex.emplace_back(k);
+          }
+          vertices.emplace_back(vertex);
       }
-      std::cout << "\n";
+      vertices.emplace_back(xyz_far);
+      double mat_tetra_current[N][N];
+      fillMatrix4x4(mat_tetra_current, vertices, N);
+      double determinant_tetra_current = determinantOfMatrix(mat_tetra_current, N);
+      volume_sum += volume3D(determinant_tetra_current);
+
+      std::cout << "determinant tetra current: " << determinant_tetra_current << "\n";
+//      std::cout << "vertices.size() : " << vertices.size() << "\n";
+      count_cube_vertices++;
   }
 
+  std::cout << "volume sum: " << volume_sum << "\n";
+//  std::cout << "count_cube_vertices: " << count_cube_vertices << "\n";
 
 //  int mat[N][N] = {{2, 1, 3}, {6, 5, 7}, {4, 9, 8}};
 
@@ -136,14 +148,54 @@ int main(int argc, const char * argv[]) {
                        {-1, -1,  1,  1},
                        { 1, -1, -1,  1}};*/
 
+    /*
+    double mat_import[N][N];
+
+    // filling matrix from obj vertex list (will be similar to vertex list from json)
+    fillMatrix4x4(mat_import, vertices_cube, N);
+
+    std::cout << "all the contents of mat_import:\n";
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            std::cout << mat_import[i][j] << " ";
+        }
+        std::cout << "\n";
+    }
+  */
 // For this the determinant will be negative, and double precision
 
+/*
     double mat[N][N] = {{ 1.01,  1.01,  1.01,  1.01},
                         {-1.01, -1.01,  1.01,  1.01},
                         {-1.01,  1.01, -1.01,  1.01},
                         { 1.01, -1.01, -1.01,  1.01}};
     std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
-    std::cout << "Determinant of " << file_in << ": " << determinantOfMatrix(mat_import, N) << std::endl;
+    std::cout << "Determinant of " << file_in << ": " << determinantOfMatrix(mat_import, N) * (1./6.) << std::endl;
+
+    double determinant_cube = determinantOfMatrix(mat_import, N);
+
+    const double xyz[3] = {-100., -100., -100.};
+
+
+    double volume_result;
+    volume_result = volume3D(determinant_cube);
+    std::cout << "volume_result: " << volume_result << "\n";
+
+
+    std::vector<std::vector<double>> cube_vec;
+    std::cout << "first triangle cube: \n";
+    for (auto i : face_indices_cube[0]) {
+        for (auto j : vertices_cube[i]) {
+            std::cout << j << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n";
+    std::cout << "vertices_cube[face_indices_cube[0][0]]: " << vertices_cube[face_indices_cube[0][0]][0] << "\n";
+//    cube_tetra_1.emplace_back(vertices_cube[face_indices_cube[0][0]])
+
+*/
 
   return 0;
 }
@@ -151,6 +203,7 @@ int main(int argc, const char * argv[]) {
 
 // Visit every 'RoofSurface' in the CityJSON model and output its geometry (the arrays of indices)
 // Useful to learn to visit the geometry boundaries and at the same time check their semantics.
+
 void visit_roofsurfaces(json &j) {
   for (auto& co : j["CityObjects"].items()) {
     for (auto& g : co.value()["geometry"]) {
