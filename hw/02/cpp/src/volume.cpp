@@ -83,7 +83,7 @@ void readObj(std::string &file_in, std::vector<std::vector<double>> &vertices, s
             // Extract all the faces('s indices) in the .obj, and store in vector face_indices
             if (word == "f") {
                 std::vector<int> face;
-                while (iss >> word) face.emplace_back(std::stoi(word));
+                while (iss >> word) face.emplace_back(std::stoi(word) - 1);
                 face_indices.push_back(face);
             }
         }
@@ -91,4 +91,8 @@ void readObj(std::string &file_in, std::vector<std::vector<double>> &vertices, s
     stream_in.close();
 }
 
-
+double volume3D(double &determinant) {
+    double result;
+    result = (1./6.) * determinant;
+    return result;
+}
