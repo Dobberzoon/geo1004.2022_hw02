@@ -10,6 +10,9 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 const int N = 4;
 
@@ -20,5 +23,6 @@ void fillMatrix4x4(double (&mat)[N][N], std::vector<std::vector<double>> &vertic
 double volumeTetra(double &determinant);
 double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<double>> &vertices,
                     std::vector<std::vector<int>> &face_indices);
+//double volumeObjectNew(json &j);
 
 #endif //CJDEMO_VOLUME_H
