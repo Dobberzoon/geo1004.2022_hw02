@@ -41,8 +41,6 @@
 
 using json = nlohmann::json;
 
-
-
 int   get_no_roof_surfaces(json &j);
 void  list_all_vertices(json& j);
 void  visit_roofsurfaces(json &j);
@@ -51,7 +49,7 @@ void  get_roof_height(json&j);
 int main(int argc, const char * argv[]) {
 
     //-- reading the file with nlohmann json: https://github.com/nlohmann/json
-    std::ifstream input("../../data/random2_cleaned_3dbag.city.json");
+    std::ifstream input("../../data/twobuildings.city.json");
     json j;
     input >> j;
     input.close();
@@ -64,6 +62,10 @@ int main(int argc, const char * argv[]) {
 
 //    visit_roofsurfaces(j);
     get_roof_height(j);
+
+//    for (auto& element : j["CityObjects"]) {
+//        std::cout << element << std::endl;
+//    }
 
 
     //-- print out the number of Buildings in the file
@@ -96,8 +98,14 @@ int main(int argc, const char * argv[]) {
 
 // Visit every 'RoofSurface' in the CityJSON model and output its geometry (the arrays of indices)
 // Useful to learn to visit the geometry boundaries and at the same time check their semantics.
+
+// interviene from one specifi solids and accumulates all the visited surfaces
+// now you need to  interviene from one specifi solids and accumulates all the visited surfaces
+// now you need to programme into a vector and make sure
+
 void visit_roofsurfaces(json &j) {
     for (auto& co : j["CityObjects"].items()) {
+//        std::vector<double> roof_surface; // put the roof surfaces and herons formula and list all vertices
         for (auto& g : co.value()["geometry"]) {
             if (g["type"] == "Solid") {
                 for (int i = 0; i < g["boundaries"].size(); i++) {
@@ -109,9 +117,17 @@ void visit_roofsurfaces(json &j) {
                     }
                 }
             }
+//            heronsArea(roof_surface);
         }
     }
 }
+
+//void heronsArea(&roof_surface){
+//    for (auto roof : roof_surface);
+//
+//}
+
+
 
 
 // Returns the number of 'RooSurface' in the CityJSON model
@@ -166,7 +182,7 @@ void get_roof_height(json &j){
     float dak_max;
     float dak_dif;
     float maaiveld;
-    float b_height;
+//    float b_height = 0;
 
     for (auto &co: j["CityObjects"]) {
         if (co["type"] == "Building") {
@@ -180,5 +196,3 @@ void get_roof_height(json &j){
         }
     }
 }
-
-
