@@ -5,6 +5,9 @@
 #include "volume.h"
 
 void subMatrix(double (&mat)[N][N], double (&temp)[N][N], int p, int q, int n) {
+    /*
+        Fills a submatrix, a sub-process of function determinantOfMatrix(...).
+     */
     int i = 0, j = 0;
     // filling the sub matrix
     for (int row = 0; row < n; row++) {
@@ -23,6 +26,13 @@ void subMatrix(double (&mat)[N][N], double (&temp)[N][N], int p, int q, int n) {
 }
 
 double determinantOfMatrix(double (&matrix)[N][N], int n) {
+    /*
+        Calculates the determinant of a matrix of size n.
+
+        Input:  - Empty matrix [N][N]
+                - n (size)
+        Output: - Determinant (double)
+     */
     double determinant = 0.;
     if (n == 1) {
         return matrix[0][0];
@@ -41,14 +51,12 @@ double determinantOfMatrix(double (&matrix)[N][N], int n) {
 
 void fillMatrix4x4(double (&mat)[N][N], std::vector<std::vector<double>> &vertices, int n){
     // filling matrix from obj vertex list (will be similar to vertex list from json)
-
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             if (j == (n - 1)) {mat[i][j] = 1.;}
             else {mat[i][j] = vertices[i][j];}
         }
     }
-
 }
 
 void readObj(std::string &file_in, std::vector<std::vector<double>> &vertices, std::vector<std::vector<int>> &face_indices) {
@@ -91,8 +99,39 @@ void readObj(std::string &file_in, std::vector<std::vector<double>> &vertices, s
     stream_in.close();
 }
 
-double volume3D(double &determinant) {
+double volumeTetra(double &determinant) {
     double result;
     result = (1./6.) * determinant;
+    return result;
+}
+
+double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<double>> &vertices_object,
+                    std::vector<std::vector<int>> &face_indices_object) {
+    /*
+        volumeObject takes an outside point and triangulated surfaces of an object to calculate the volume
+        of said object. This is achieved by summation of signed volumes of corresponding tetrahedra of object
+        surface triangles and outside point.
+
+        Input:  - Outside point (eg extreme of data extent +/- a margin), in vorm of a coordinate vector.
+                - vertex list of (triangulated) object
+                - surfaces list of (triangulated) object
+        Output: - volume (in given units, double precision)
+     */
+    double result = 0.;
+    for (auto i : face_indices_object) {
+        std::vector<std::vector<double>> vertices_current;
+        for (auto j : i) {
+            std::vector<double> vertex;
+            for (auto k : vertices_object[j]) {
+                vertex.emplace_back(k);
+            }
+            vertices_current.emplace_back(vertex);
+        }
+        vertices_current.emplace_back(outside_point);
+        double mat_tetra_current[N][N];
+        fillMatrix4x4(mat_tetra_current, vertices_current, N);
+        double determinant_tetra_current = determinantOfMatrix(mat_tetra_current, N);
+        result += volumeTetra(determinant_tetra_current);
+    }
     return result;
 }
