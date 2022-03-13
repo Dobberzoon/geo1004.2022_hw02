@@ -87,7 +87,7 @@ int main(int argc, const char * argv[]) {
   o << j.dump(2) << std::endl;
   o.close();
 
-  std::string file_in = "../../data/cube_triangulated copy.obj";
+  std::string file_in = "../../data/cube_triangulated_copy.obj";
 
   // ## Read OBJ file ##
   // The vertices and faces are read and stored into vectors.
@@ -114,9 +114,10 @@ int main(int argc, const char * argv[]) {
       std::cout << "\n";
   }
 
-  int count_cube_vertices = 0;
-  double volume_sum = 0.;
   std::vector<double> xyz_far = {-100., -100., -100.};
+  double volume_sum = volumeObject(xyz_far, vertices_cube, face_indices_cube);
+
+/*
   for (auto i : face_indices_cube) {
       std::vector<std::vector<double>> vertices;
       for (auto j : i) {
@@ -130,72 +131,14 @@ int main(int argc, const char * argv[]) {
       double mat_tetra_current[N][N];
       fillMatrix4x4(mat_tetra_current, vertices, N);
       double determinant_tetra_current = determinantOfMatrix(mat_tetra_current, N);
-      volume_sum += volume3D(determinant_tetra_current);
+      volume_sum += volumeTetra(determinant_tetra_current);
 
       std::cout << "determinant tetra current: " << determinant_tetra_current << "\n";
-//      std::cout << "vertices.size() : " << vertices.size() << "\n";
       count_cube_vertices++;
   }
-
-  std::cout << "volume sum: " << volume_sum << "\n";
-//  std::cout << "count_cube_vertices: " << count_cube_vertices << "\n";
-
-//  int mat[N][N] = {{2, 1, 3}, {6, 5, 7}, {4, 9, 8}};
-
-// For this the determinant will be positive
-/*    int mat[N][N] = {{ 1,  1,  1,  1},
-                       {-1,  1, -1,  1},
-                       {-1, -1,  1,  1},
-                       { 1, -1, -1,  1}};*/
-
-    /*
-    double mat_import[N][N];
-
-    // filling matrix from obj vertex list (will be similar to vertex list from json)
-    fillMatrix4x4(mat_import, vertices_cube, N);
-
-    std::cout << "all the contents of mat_import:\n";
-
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            std::cout << mat_import[i][j] << " ";
-        }
-        std::cout << "\n";
-    }
-  */
-// For this the determinant will be negative, and double precision
-
-/*
-    double mat[N][N] = {{ 1.01,  1.01,  1.01,  1.01},
-                        {-1.01, -1.01,  1.01,  1.01},
-                        {-1.01,  1.01, -1.01,  1.01},
-                        { 1.01, -1.01, -1.01,  1.01}};
-    std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
-    std::cout << "Determinant of " << file_in << ": " << determinantOfMatrix(mat_import, N) * (1./6.) << std::endl;
-
-    double determinant_cube = determinantOfMatrix(mat_import, N);
-
-    const double xyz[3] = {-100., -100., -100.};
-
-
-    double volume_result;
-    volume_result = volume3D(determinant_cube);
-    std::cout << "volume_result: " << volume_result << "\n";
-
-
-    std::vector<std::vector<double>> cube_vec;
-    std::cout << "first triangle cube: \n";
-    for (auto i : face_indices_cube[0]) {
-        for (auto j : vertices_cube[i]) {
-            std::cout << j << " ";
-        }
-        std::cout << "\n";
-    }
-    std::cout << "\n";
-    std::cout << "vertices_cube[face_indices_cube[0][0]]: " << vertices_cube[face_indices_cube[0][0]][0] << "\n";
-//    cube_tetra_1.emplace_back(vertices_cube[face_indices_cube[0][0]])
-
 */
+  std::cout << "volume sum: " << volume_sum << "\n";
+
 
   return 0;
 }
