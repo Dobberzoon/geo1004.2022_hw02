@@ -121,13 +121,14 @@ int main(int argc, const char * argv[]) {
     std::cout << "size of vertices_one_building: " << vertices_one_building.size() << "\n";
     std::cout << "all the vertices_one_building of: " << file_in << "\n";
 
+    /*
     for (int i = 0; i < vertices_one_building.size(); i++) {
         std::cout << "vertex " << i << ":";
         for (auto j : vertices_one_building[i]) {std::cout << " " << j;}
         std::cout << "\n";
     }
 
-    /*
+
        std::cout << "all the face indices of: " << file_in << "\n";
 
        for (auto i : face_indices_one_building) {
@@ -167,12 +168,12 @@ int main(int argc, const char * argv[]) {
 
             for (auto& i : co.value()["children"]) {
                 count_children2++;
-                std::cout << "child: " << i.get<std::string>() << "\n";
+                //std::cout << "child: " << i.get<std::string>() << "\n";
 
                 for (auto& g : j["CityObjects"][i.get<std::string>()]["geometry"]) {
                     int count_loop = 0;
                     for (int i = 0; i < g["boundaries"].size(); i++) {
-                        std::cout << "g[\"boundaries\"][i].size(): " << g["boundaries"][i].size() << std::endl;
+                        //std::cout << "g[\"boundaries\"][i].size(): " << g["boundaries"][i].size() << std::endl;
                         for (int k = 0; k < g["boundaries"][i].size(); k++) {
                             std::vector<std::vector<double>> vertices_current;
                             count_loop++;
@@ -252,12 +253,13 @@ int main(int argc, const char * argv[]) {
                             //<< (j["vertices"][g["boundaries"][i][k][0][0].get<int>()][2].get<int>() * j["transform"]["scale"][2].get<double>()) + j["transform"]["translate"][2].get<double>()<< "\n";
                         }
                     }
-                    std::cout << "CHECK COUNT_LOOP: " << count_loop << std::endl;
+                    //std::cout << "CHECK COUNT_LOOP: " << count_loop << std::endl;
                 }
             }
 
-            std::cout << "VOLUME BRO: " << volume << std::endl;
-            co.value()["attributes"]["volume"] = volume;
+            //std::cout << "VOLUME BRO: " << volume << std::endl;
+            std::string unit = "m^3";
+            co.value()["attributes"]["volume"] = std::to_string(volume) + unit;
             //std::cout << co.key() << "\n";
         }
         //std::cout << co.key() << "\n";
