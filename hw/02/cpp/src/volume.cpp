@@ -100,8 +100,12 @@ void readObj(std::string &file_in, std::vector<std::vector<double>> &vertices, s
 }
 
 double volumeTetra(double &determinant) {
-    double result;
-    result = (1./6.) * determinant;
+    /*
+        VolumeTetra is a tetrahedron (3-simplex) specific function to calculate its volume.
+        Input:  - determinant (double)
+        Output: - volume (double)
+     */
+    double result = (1./6.) * determinant;
     return result;
 }
 
