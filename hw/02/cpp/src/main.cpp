@@ -29,7 +29,7 @@
 +------------------------------------------------------------------------------+
   / _ \___ _/ /__  / _ \___ _/ /__  / _ \__ ______/ /__
  / // / _ `/  '_/ / // / _ `/  '_/ / // / // / __/  '_/
-/____/\_,_/_/\_\ /____/\_,_/_/\_\ /____/\_,_/\__/_/\_\ 
+/____/\_,_/_/\_\ /____/\_,_/_/\_\ /____/\_,_/\__/_/\_\
 */
 
 #include <iostream>
@@ -60,7 +60,6 @@ int main(int argc, const char * argv[]) {
     // list_all_vertices(j);
 
 //    visit_roofsurfaces(j);
-    get_building_height(j);
 
 //    for (auto& element : j["CityObjects"]) {
 //        std::cout << element << std::endl;
@@ -79,10 +78,12 @@ int main(int argc, const char * argv[]) {
     //-- print out the number of vertices in the file
     std::cout << "Number of vertices " << j["vertices"].size() << std::endl;
 
+    get_building_height(j);
+
     //-- add an attribute "volume"
     for (auto& co : j["CityObjects"]) {
         if (co["type"] == "Building") {
-            co["attributes"]["volume"] = rand();
+            co["attributes"]["volume"];
         }
     }
 
@@ -196,7 +197,7 @@ void get_roof_height(json &j) {
 }
 
 void get_building_height(json &j) {
-    float dak_min, dak_max, dak_dif, maaiveld, h_from_ground;
+    float dak_min, dak_max, dak_dif, maaiveld, h_from_ground, dak_dif_f;
     int no_floors;
     for (auto &co: j["CityObjects"].items()) {
 //        std::cout << "CityObject: " << co.key() << std::endl;
@@ -208,12 +209,17 @@ void get_building_height(json &j) {
             h_from_ground = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld);
             dak_dif = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld) / 3.0;
 
+
             std::cout << "Dak Max: " << dak_max << std::endl;
             std::cout << "Dak Min: " << dak_min << std::endl;
             std::cout << "Maaiveld: " << maaiveld << std::endl;
-            no_floors = dak_dif;
-
             std::cout << "Height from Ground: " << h_from_ground << std::endl;
+
+            if (dak_dif / ceil(dak_dif) >= 0.9) {
+                no_floors = ceil(dak_dif);
+            }
+            else {no_floors = dak_dif;}
+
             std::cout << "No of Floors: " << no_floors << std::endl;
             std::cout << std::endl;
         }

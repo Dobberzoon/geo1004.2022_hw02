@@ -31,7 +31,7 @@
         "val3dity_codes_lod12": "[]",
         "val3dity_codes_lod13": "[]",
         "val3dity_codes_lod22": "[]",
-        "volume": 16807,
+        "volume": null,
         "voorkomenidentificatie": 1
       },
       "children": [
@@ -510,7 +510,7 @@
         "val3dity_codes_lod12": "[]",
         "val3dity_codes_lod13": "[]",
         "val3dity_codes_lod22": "[]",
-        "volume": 282475249,
+        "volume": null,
         "voorkomenidentificatie": 1
       },
       "children": [
