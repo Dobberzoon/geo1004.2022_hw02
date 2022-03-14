@@ -41,10 +41,11 @@
 
 using json = nlohmann::json;
 
-int   get_no_roof_surfaces(json &j);
-void  list_all_vertices(json& j);
-void  visit_roofsurfaces(json &j);
-void  get_roof_height(json&j);
+int     get_no_roof_surfaces(json &j);
+void    list_all_vertices(json& j);
+void    visit_roofsurfaces(json &j);
+void    get_roof_height(json&j);
+void    get_building_height(json &j);
 
 int main(int argc, const char * argv[]) {
 
@@ -61,7 +62,7 @@ int main(int argc, const char * argv[]) {
     // list_all_vertices(j);
 
 //    visit_roofsurfaces(j);
-    get_roof_height(j);
+    get_building_height(j);
 
 //    for (auto& element : j["CityObjects"]) {
 //        std::cout << element << std::endl;
@@ -176,23 +177,71 @@ void list_all_vertices(json& j) {
     }
 }
 
-
-void get_roof_height(json &j){
+void get_roof_height(json &j) {
     float dak_min;
     float dak_max;
-    float dak_dif;
     float maaiveld;
+    int no_floors;
 //    float b_height = 0;
-
-    for (auto &co: j["CityObjects"]) {
-        if (co["type"] == "Building") {
-//            std::cout << "= CityObject: " << co.key() << std::endl;
-            dak_min = co["attributes"]["h_dak_min"];
-            dak_max = co["attributes"]["h_dak_max"];
-            maaiveld = co["attributes"]["h_maaiveld"];
-            dak_dif = ((0.7 * (dak_max - dak_min)) - maaiveld) / 3.0;
-            dak_dif = ceil(dak_dif);
-            std::cout << "building height: " << dak_dif << std::endl;
+    for (auto& [key, value]: j["CityObjects"].items()) {
+        for (auto& co : j["CityObjects"]) {
+            if (co["type"] == "Building") {
+                std::cout << key << "...." << std::endl;
+                dak_min = co["attributes"]["h_dak_min"];
+                dak_max = co["attributes"]["h_dak_max"];
+                maaiveld = co["attributes"]["h_maaiveld"];
+                no_floors = ceil((0.7 * (dak_max - dak_min)) - maaiveld);
+                std::cout << no_floors << std::endl;
+            }
         }
     }
 }
+
+void get_building_height(json &j) {
+    float dak_min, dak_max, dak_dif, maaiveld, h_from_ground;
+    int no_floors;
+    for (auto &co: j["CityObjects"].items()) {
+//        std::cout << "CityObject: " << co.key() << std::endl;
+        if (co.value()["type"] == "Building"){
+            std::cout << co.key() << std::endl;
+            dak_min = co.value()["attributes"]["h_dak_min"];
+            dak_max = co.value()["attributes"]["h_dak_max"];
+            maaiveld = co.value()["attributes"]["h_maaiveld"];
+            h_from_ground = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld);
+            dak_dif = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld) / 3.0;
+
+            std::cout << "Dak Max: " << dak_max << std::endl;
+            std::cout << "Dak Min: " << dak_min << std::endl;
+            std::cout << "Maaiveld: " << maaiveld << std::endl;
+            no_floors = dak_dif;
+
+            std::cout << "Height from Ground: " << h_from_ground << std::endl;
+            std::cout << "No of Floors: " << no_floors << std::endl;
+            std::cout << std::endl;
+        }
+    }
+}
+
+//for (auto& co : j["CityObjects"].items()) {
+//std::cout << "= CityObject: " << co.key() << std::endl;
+//for (auto& g : co.value()["geometry"]) {
+
+
+
+
+
+
+////        for (auto &co: j["CityObjects"]) {
+//            if (co["type"] == "Building") {
+////            std::cout << "= CityObject: " << co.key() << std::endl;
+//                dak_min = co["attributes"]["h_dak_min"];
+//                dak_max = co["attributes"]["h_dak_max"];
+//                maaiveld = co["attributes"]["h_maaiveld"];
+//                dak_dif = ((0.7 * (dak_max - dak_min)) - maaiveld) / 3.0;
+//                dak_dif = ceil(dak_dif);
+//                std::cout << "building height: " << dak_dif << std::endl;
+////            }
+//        }
+//    }
+
+
