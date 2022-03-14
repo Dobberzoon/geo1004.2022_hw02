@@ -84,82 +84,48 @@ int main(int argc, const char * argv[]) {
   }
    */
 
-
     std::string file_in = "../../data/one_building.obj";
 
-    // ## Read OBJ file ##
+    // ## Read OBJ file (FOR TESTING PURPOSES) ##
     // The vertices and faces are read and stored into vectors.
 
     std::vector<std::vector<double>> vertices_one_building;
     std::vector<std::vector<int>> face_indices_one_building;
     readObj(file_in, vertices_one_building, face_indices_one_building);
 
+    /*
     // ## Create outside point ##
     // with margin, guaranteed to be outside any object.
-    // create new vertex outside bbox --> "outside point" for the tetrahedra (stored as an array)
     std::vector<double> outside_point = { j["metadata"]["geographicalExtent"][0].get<double>() - 1.,
-                                        j["metadata"]["geographicalExtent"][1].get<double>() - 1.,
-                                        j["metadata"]["geographicalExtent"][2].get<double>() - 1.};
+                                          j["metadata"]["geographicalExtent"][1].get<double>() - 1.,
+                                          j["metadata"]["geographicalExtent"][2].get<double>() - 1.};
 
+    // another outside point, which is just the first vertex in the JSON file, with an offset.
     std::vector<int> vi = j["vertices"][0];
     std::vector<double> outside_point_close = {(vi[0] * j["transform"]["scale"][0].get<double>()) + j["transform"]["translate"][0].get<double>() - 1.,
                                                (vi[1] * j["transform"]["scale"][1].get<double>()) + j["transform"]["translate"][1].get<double>() - 1.,
                                                (vi[2] * j["transform"]["scale"][2].get<double>()) + j["transform"]["translate"][2].get<double>() - 1.};
 
+     */
 
-    // ## Calculate volume of object ##
-    double volume_sum = volumeObject(outside_point_close, vertices_one_building, face_indices_one_building);
-
-    for (auto& co : j["CityObjects"]) {
-        if (co["type"] == "Building") {
-            //co["attributes"]["volume"] = volume_sum;
-        }
-    }
-
+    // ## Calculate volume of object (works on .obj) ##
+    //double volume_sum = volumeObject(outside_point_close, vertices_one_building, face_indices_one_building);
 
 
     std::cout << "size of vertices_one_building: " << vertices_one_building.size() << "\n";
     std::cout << "all the vertices_one_building of: " << file_in << "\n";
 
-    /*
-    for (int i = 0; i < vertices_one_building.size(); i++) {
-        std::cout << "vertex " << i << ":";
-        for (auto j : vertices_one_building[i]) {std::cout << " " << j;}
-        std::cout << "\n";
-    }
-
-
-       std::cout << "all the face indices of: " << file_in << "\n";
-
-       for (auto i : face_indices_one_building) {
-         for (auto j: i) { std::cout << " " << j; }
-         std::cout << "\n";
-     }
-   */
-
     std::cout << "face_indices_one_building.size(): " << face_indices_one_building.size() << std::endl;
 
 
-    std::cout << std::setprecision(8) << std::fixed << "volume sum: " << volume_sum << "\n";
-
-    for (auto& co : j["CityObjects"]) {
-        int count_children = 0;
-        if (co["type"] == "Building") {
-            for (auto& i : co["children"]) {
-                count_children++;
-            }
-        }
-        if (count_children > 1) {
-            //std::cout << "number of children in building " << co << ": " << count_children << "\n";
-            //std::cout << co.operator[]("key") << "\n";
-
-        }
-    }
-
-    std::vector<std::vector<double>> vertices_parent;
-    std::vector<std::vector<int>> face_indices_parent;
+    //std::cout << std::setprecision(8) << std::fixed << "volume sum: " << volume_sum << "\n";
 
 
+    volumeAllObjects(j);
+
+    /*
+    // This loop traverses all CityObjects and calculates each volume, writing it as an attribute
+    std::string unit_volume = "m^3";
     for (auto& co : j["CityObjects"].items()) {
 
         int count_children2 = 0;
@@ -168,30 +134,14 @@ int main(int argc, const char * argv[]) {
 
             for (auto& i : co.value()["children"]) {
                 count_children2++;
-                //std::cout << "child: " << i.get<std::string>() << "\n";
 
                 for (auto& g : j["CityObjects"][i.get<std::string>()]["geometry"]) {
                     int count_loop = 0;
                     for (int i = 0; i < g["boundaries"].size(); i++) {
-                        //std::cout << "g[\"boundaries\"][i].size(): " << g["boundaries"][i].size() << std::endl;
                         for (int k = 0; k < g["boundaries"][i].size(); k++) {
                             std::vector<std::vector<double>> vertices_current;
                             count_loop++;
                             std::vector<double> vertex_cur1; std::vector<double> vertex_cur2; std::vector<double> vertex_cur3;
-                            //vertex_cur1 = {(j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>() * j["transform"]["scale"][0].get<double>()) + j["transform"]["translate"][0].get<double>(),
-                            //              (j["vertices"][g["boundaries"][i][k][0].get<int>()][1].get<int>() * j["transform"]["scale"][1].get<double>()) + j["transform"]["translate"][1].get<double>(),
-                            //              (j["vertices"][g["boundaries"][i][k][0].get<int>()][2].get<int>() * j["transform"]["scale"][2].get<double>()) + j["transform"]["translate"][2].get<double>()};
-                            //vertex_cur.emplace_back(outside_point);
-                            //std::cout << "i: " << i << "k: " << k << std::endl;
-                            //std::cout << g["boundaries"][i][k] << std::endl;
-                            //std::cout << " g[\"boundaries\"][i][j][0][0]: " << g["boundaries"][i][k][0][0] << std::endl;
-                            //std::cout << " j[\"vertices\"][g[\"boundaries\"][i][k][0][0].get<int>()]: " << j["vertices"][g["boundaries"][i][k][0][0].get<int>()]<< std::endl;
-                            //std::cout << " g[\"boundaries\"][i][j][0][0]: " << g["boundaries"][i][k][0][0] << std::endl;
-                            //std::cout << " g[\"boundaries\"][i][j][0][0]: " << g["boundaries"][i][k][0][0] << std::endl;
-                            //std::cout << " g[\"boundaries\"][i][j] X: "<< j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0] << std::endl;
-                            //std::cout << " g[\"boundaries\"][i][j] X: "<< j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>() << std::endl;
-                            //std::cout << " g[\"boundaries\"][i][j] Y: "<< j["vertices"][g["boundaries"][i][k][0][0].get<int>()][1].get<int>() << std::endl;
-                            //std::cout << " g[\"boundaries\"][i][j] Z: "<< j["vertices"][g["boundaries"][i][k][0][0].get<int>()][2].get<int>() << std::endl;
 
                             int x1, x2, x3, y1, y2, y3, z1, z2, z3;
                             x1 = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>();
@@ -223,63 +173,22 @@ int main(int argc, const char * argv[]) {
                             vertices_current.emplace_back(vertex_cur3);
                             vertices_current.emplace_back(outside_point);
 
-                            /*
-                            for (auto i : vertex_cur1) {
-                                std::cout << i << " ";
-                            }
-                            std::cout << std::endl;
-
-                            for (auto i : vertex_cur2) {
-                                std::cout << i << " ";
-                            }
-                            std::cout << std::endl;
-
-                            for (auto i : vertex_cur3) {
-                                std::cout << i << " ";
-                            }
-                            std::cout << std::endl;
-                             */
-
                             double mat_tetra_current[N][N];
                             fillMatrix4x4(mat_tetra_current, vertices_current, N);
                             double determinant_tetra_current = determinantOfMatrix(mat_tetra_current, N);
                             volume += volumeTetra(determinant_tetra_current);
-
-                            //double x = j["vertices"][g["boundaries"][i][j][0][0]][0];
-                            //std::cout << "Surface: " << j["vertices"][g["boundaries"][i][j][0][0].get<int>()] << std::endl;
-                            //std::cout << "first vertex: " << g["boundaries"][i][k][0][0].get<int>() << "\n";
-                            //std::cout << "hallooo: " << (j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>() * j["transform"]["scale"][0].get<double>()) + j["transform"]["translate"][0].get<double>() << ", "
-                            //<< (j["vertices"][g["boundaries"][i][k][0][0].get<int>()][1].get<int>() * j["transform"]["scale"][1].get<double>()) + j["transform"]["translate"][1].get<double>() << ", "
-                            //<< (j["vertices"][g["boundaries"][i][k][0][0].get<int>()][2].get<int>() * j["transform"]["scale"][2].get<double>()) + j["transform"]["translate"][2].get<double>()<< "\n";
                         }
                     }
-                    //std::cout << "CHECK COUNT_LOOP: " << count_loop << std::endl;
                 }
             }
-
-            //std::cout << "VOLUME BRO: " << volume << std::endl;
-            std::string unit = "m^3";
-            co.value()["attributes"]["volume"] = std::to_string(volume) + unit;
-            //std::cout << co.key() << "\n";
+            // Write value as an attribute to cityjson
+            co.value()["attributes"]["volume"] = std::to_string(volume) + unit_volume;
         }
-        //std::cout << co.key() << "\n";
-        //std::cout << "count children 2: " << count_children2 << std::endl;
-
     }
-
-    std::vector<std::vector<double>> all_vertices;
-    store_all_vertices(j, all_vertices);
-
-    std::cout << "all_vertices.size(): " << all_vertices.size() << "\n";
-
-
-    double x = vi[0] * j["transform"]["scale"][0].get<double>();
-    std::cout << "first vertex: " << j["vertices"][0][0] << "\n";
-    std::cout << "scale thing: " << j["transform"]["scale"][0].get<double>();
-
+     */
 
     //-- write to disk the modified city model (myfile.city.json)
-    std::ofstream o("../../data/myfile_new_with_volumes.triangulated.city.json");
+    std::ofstream o("../../data/myfile_new_with_volumes_TESTFUNC.triangulated.city.json");
     o << j.dump(2) << std::endl;
     o.close();
 
@@ -354,6 +263,7 @@ void list_all_vertices(json& j) {
   }
 }
 
+/*
 void store_all_vertices(json& j, std::vector<std::vector<double>>& all_vertices) {
     for (auto& co : j["CityObjects"].items()) {
         //std::cout << "= CityObject: " << co.key() << std::endl;
@@ -391,3 +301,4 @@ void store_all_vertices(json& j, std::vector<std::vector<double>>& all_vertices)
         //std::cout << "\n";
     }
 }
+ */
