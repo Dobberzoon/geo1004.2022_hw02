@@ -232,48 +232,54 @@ void vertices_roof(json& j) {
 
 void list_all_vertices01(json& j) {
 
-    float ar, roof_area=0.00;
+    float ar, roof_area = 0.00;
     std::vector<std::vector<double>> triangle;
     for (auto &co: j["CityObjects"].items()) {
-        roof_area=0.00;
+        roof_area = 0.00;
         std::cout << "= CityObject: " << co.key() << std::endl;
         for (auto &g: co.value()["geometry"]) {
             if (g["type"] == "Solid") {
-                for (auto &shell: g["boundaries"]) {
-                    for (auto &surface: shell) {
-                        //std::vector<std::vector<double>> triangle;
-                        for (auto &ring: surface) {
-                            //std::cout << "---" << std::endl;
-                            for (auto &v: ring) {
-                                std::vector<double>coord;
-                                std::vector<int> vi = j["vertices"][v.get<int>()];
-                                double x = (vi[0] * j["transform"]["scale"][0].get<double>()) +
-                                           j["transform"]["translate"][0].get<double>();
-                                double y = (vi[1] * j["transform"]["scale"][1].get<double>()) +
-                                           j["transform"]["translate"][1].get<double>();
-                                //double z = (vi[2] * j["transform"]["scale"][2].get<double>()) + j["transform"]["translate"][2].get<double>();
-                                //std::cout<< v << " (" << x << ", " << y << ", " << z << ")" << std::endl;
-                                coord.emplace_back(x);
-                                coord.emplace_back(y);
-                                triangle.emplace_back(coord);}
+                for (auto &shell0: g["semantics"]["values"]) {
+                    for (auto &s: shell0) {
+                        if (g["semantics"]["surfaces"][s.get<int>()]["type"].get<std::string>().compare(
+                                "RoofSurface") == 0) {
+                            for (auto &shell: g["boundaries"]) {
+                                for (auto &surface: shell) {
+                                    //std::vector<std::vector<double>> triangle;
+                                    for (auto &ring: surface) {
+                                        //std::cout << "---" << std::endl;
+                                        for (auto &v: ring) {
+                                            std::vector<double> coord;
+                                            std::vector<int> vi = j["vertices"][v.get<int>()];
+                                            double x = (vi[0] * j["transform"]["scale"][0].get<double>()) +
+                                                       j["transform"]["translate"][0].get<double>();
+                                            double y = (vi[1] * j["transform"]["scale"][1].get<double>()) +
+                                                       j["transform"]["translate"][1].get<double>();
+                                            //double z = (vi[2] * j["transform"]["scale"][2].get<double>()) + j["transform"]["translate"][2].get<double>();
+                                            //std::cout<< v << " (" << x << ", " << y << ", " << z << ")" << std::endl;
+                                            coord.emplace_back(x);
+                                            coord.emplace_back(y);
+                                            triangle.emplace_back(coord);
+                                        }
 
-                            ar=heron(triangle);
-                            roof_area=ar+roof_area;
+                                        ar = heron(triangle);
+                                        roof_area = ar + roof_area;
+                                    }
+                                    //std::cout<<roof_area<<std::endl;
 
-
-
-
-                        }
-                        //std::cout<<roof_area<<std::endl;
-
+                                }
                             }
                         }
                     }
                 }
-            //std::cout<<"Area of roof "<<roof_area<<std::endl;
+                //std::cout<<"Area of roof "<<roof_area<<std::endl;
 
-        std::cout<<"Area of roof "<<roof_area<<std::endl;}
-    //std::cout<<"Area of roof "<<roof_area<<std::endl;
+                //std::cout << "Area of roof " << roof_area << std::endl;
+            }
+
+            std::cout<<"Area of roof "<<roof_area<<std::endl;}
+    }
+
 }
 
 
