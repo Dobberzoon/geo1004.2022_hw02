@@ -60,7 +60,7 @@ int main(int argc, const char * argv[]) {
     // list_all_vertices(j);
 
 //    visit_roofsurfaces(j);
-
+//
 //    for (auto& element : j["CityObjects"]) {
 //        std::cout << element << std::endl;
 //    }
@@ -209,13 +209,12 @@ void get_building_height(json &j) {
             h_from_ground = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld);
             dak_dif = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld) / 3.0;
 
-
             std::cout << "Dak Max: " << dak_max << std::endl;
             std::cout << "Dak Min: " << dak_min << std::endl;
             std::cout << "Maaiveld: " << maaiveld << std::endl;
             std::cout << "Height from Ground: " << h_from_ground << std::endl;
 
-            if (dak_dif / ceil(dak_dif) >= 0.9) {
+            if (dak_dif / ceil(dak_dif) >= 0.87) {
                 no_floors = ceil(dak_dif);
             }
             else {no_floors = dak_dif;}
