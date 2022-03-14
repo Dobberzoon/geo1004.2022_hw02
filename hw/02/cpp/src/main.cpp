@@ -43,7 +43,7 @@ int     get_no_roof_surfaces(json &j);
 void    list_all_vertices(json& j);
 void    visit_roofsurfaces(json &j);
 void    get_roof_height(json&j);
-void    get_building_height(json &j);
+int    get_building_height(json &j);
 
 int main(int argc, const char * argv[]) {
 
@@ -128,8 +128,6 @@ void visit_roofsurfaces(json &j) {
 //}
 
 
-
-
 // Returns the number of 'RooSurface' in the CityJSON model
 int get_no_roof_surfaces(json &j) {
     int total = 0;
@@ -176,28 +174,9 @@ void list_all_vertices(json& j) {
     }
 }
 
-void get_roof_height(json &j) {
-    float dak_min;
-    float dak_max;
-    float maaiveld;
-    int no_floors;
-//    float b_height = 0;
-    for (auto& [key, value]: j["CityObjects"].items()) {
-        for (auto& co : j["CityObjects"]) {
-            if (co["type"] == "Building") {
-                std::cout << key << "...." << std::endl;
-                dak_min = co["attributes"]["h_dak_min"];
-                dak_max = co["attributes"]["h_dak_max"];
-                maaiveld = co["attributes"]["h_maaiveld"];
-                no_floors = ceil((0.7 * (dak_max - dak_min)) - maaiveld);
-                std::cout << no_floors << std::endl;
-            }
-        }
-    }
-}
 
-void get_building_height(json &j) {
-    float dak_min, dak_max, dak_dif, maaiveld, h_from_ground, dak_dif_f;
+int get_building_height(json &j) {
+    float dak_min, dak_max, dak_dif, maaiveld, h_from_ground ;
     int no_floors;
     for (auto &co: j["CityObjects"].items()) {
 //        std::cout << "CityObject: " << co.key() << std::endl;
@@ -222,15 +201,13 @@ void get_building_height(json &j) {
             std::cout << "No of Floors: " << no_floors << std::endl;
             std::cout << std::endl;
         }
+        return no_floors;
     }
 }
 
 //for (auto& co : j["CityObjects"].items()) {
 //std::cout << "= CityObject: " << co.key() << std::endl;
 //for (auto& g : co.value()["geometry"]) {
-
-
-
 
 
 
