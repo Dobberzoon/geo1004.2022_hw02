@@ -43,6 +43,7 @@ using json = nlohmann::json;
 int   get_no_roof_surfaces(json &j);
 void  list_all_vertices(json& j);
 void  visit_roofsurfaces(json &j);
+std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices);
 
 
 
@@ -158,7 +159,34 @@ int main(int argc, const char * argv[]) {
   std::cout << "Determinant: " << determinantOfMatrix(mat, N) << std::endl;
     std::cout << "Determinant of " << file_in << ": " << determinantOfMatrix(mat_import, N) << std::endl;
 
-    list_all_vertices(j);
+  // list_all_vertices(j);
+
+  // initialise variable for volume
+  double vol = 0;
+
+  // get all buildingParts per building
+  for (auto& co: j["CityObjects"].items()){
+      //print key value pair
+      std::cout <<"key: " << co.key() << "value: " << co.value() << std::endl;
+
+      // get volume of building
+
+      for (auto& g : co.value()["children"].items()){
+          std::cout << "children: " << g.value() << std::endl;
+
+      }
+
+  }
+
+
+  std::vector<std::vector<double>> test_vector;
+  std::vector<double> p0 = {6,1,4};
+  std::vector<double> p1 = {7,0,9};
+  std::vector<double> p2 = {1,1,2};
+  test_vector = {p0, p1, p2};
+
+  std::vector<double> s_normal = surfaceNormal(test_vector);
+
 
   return 0;
 }
@@ -200,6 +228,9 @@ int get_no_roof_surfaces(json &j) {
       }
     }
   }
+
+
+
   return total;
 }
 
@@ -220,7 +251,8 @@ void list_all_vertices(json& j) {
                 double x = (vi[0] * j["transform"]["scale"][0].get<double>()) + j["transform"]["translate"][0].get<double>();
                 double y = (vi[1] * j["transform"]["scale"][1].get<double>()) + j["transform"]["translate"][1].get<double>();
                 double z = (vi[2] * j["transform"]["scale"][2].get<double>()) + j["transform"]["translate"][2].get<double>();
-                std::cout << std::setprecision(2) << std::fixed << v << " (" << x << ", " << y << ", " << z << ")" << std::endl;                
+                std::cout << std::setprecision(2) << std::fixed << v << " (" << x << ", " << y << ", " << z << ")" << std::endl;
+                //std::cout << std::setprecision(2) << std::fixed << v << " (" << vi[0] << ", " << vi[1] << ", " << vi[2] << ")" << std::endl;
               }
             }
           }
@@ -229,3 +261,23 @@ void list_all_vertices(json& j) {
     }
   }
 }
+// get polygon's normal with Newell's method
+std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices){
+    // empty vector and empty variables to hold the normal later on
+    std::vector<double> normal(3);
+    double nx = 0, ny = 0, nz = 0;
+
+    for (int v = 0; v < vertices.size(); v++){
+        std::vector<double> current = vertices[v];
+        std::vector<double> next = vertices[(v+1)%vertices.size()];
+
+        nx += (current[1] - next[1]) * (current[2] + next[2]);
+        ny += (current[2] - next[2]) * (current[0] + next[0]);
+        nz += (current[0] - next[0]) * (current[1] + next[1]);
+    }
+
+    //double norm = std::sqrt( pow(nx, 2) + pow(ny, 2) + pow(nz, 2));
+    normal = {nx, ny, nz};
+    std::cout << "normal vector: " << nx<< ", " << ny << ", " << nz << std::endl;
+    return normal;
+    }
