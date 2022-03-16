@@ -70,20 +70,21 @@ float heron(std::vector<std::vector<double>>vic){
 
 double orientation(std::vector<double>norm){
     std::string dir;
-    double leng=sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2]);
-    double cosf=norm[1]/leng;
-    double f=acos(cosf);
+    double x=norm[0];
+    double y=norm[1];
 
-     if(f==90) {dir="N";}
-     else if(f>90 && f<=135) {dir="NW";}
-     else if(f>135 && f<=180) {dir="W";}
-     else if(f>180 && f<=225) {dir="SW";}
-     else if(f>225 && f<=270) {dir="S";}
-     else if(f>270 && f<=315) {dir="SE";}
-     else if (f>315 && (f<=360 || f==0)) {dir="E";}
-     else if (f>0 && f<=45) {dir="NW";}
 
-     std::cout<<f;}
+     if(x==0 && y>0) {dir="N";}
+     else if(x<0 && y>0) {dir="NW";}
+     else if(x<0 && y==0) {dir="W";}
+     else if(x<0 && y<0) {dir="SW";}
+     else if(x==0 && y<0) {dir="S";}
+     else if(y<0 && x>0) {dir="SE";}
+     else if (y==0 && x>0) {dir="E";}
+     else if (y>0 && x>0) {dir="NE";}
+     else if (x==0 && y==0) {dir="horizontal";}
+
+     std::cout<<dir;}
 
 std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices){
     // empty vector and empty variables to hold the normal later on
@@ -400,12 +401,14 @@ void roofSurfaceArea(json &j) {
 
 void extractPoly(json &j) {
     for (auto &co: j["CityObjects"].items()) {
+
         for (auto &g: co.value()["geometry"]) {
             if (g["type"] == "Solid") {
+                std::cout<<"Orientation of surfaces of house"<<"\n";
                 for (int i = 0; i < g["boundaries"].size(); i++) {
                     for (int k = 0; k < g["boundaries"][i].size(); k++) {
                         int sem_index = g["semantics"]["values"][i][k];
-
+                        //std::cout<<"Orientation of surfaces of house"<<"\n";
                         if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") ==
                             0) {
                             double orient;
@@ -462,7 +465,7 @@ void extractPoly(json &j) {
                                 std::cout<<normie[i]<<' '<<"\n";
                             }*/
                             orient=orientation(normie);
-                            std::cout<<orient<<" ";
+                            std::cout<<orient<<"\n";
                         }
                     }
 
