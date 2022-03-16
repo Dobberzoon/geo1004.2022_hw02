@@ -184,35 +184,54 @@ void getCOBuildingHeights(json &j) {
 
     for (auto &co: j["CityObjects"].items()) {
 //        std::cout << "CityObject: " << co.key() << std::endl;
-        if (co.value()["type"] == "Building" && co.value()["attributes"]["dak_type"] == "no points"){
-            std::cout << co.key() << std::endl;
-            /*
-
-             std::cout << co.value()["attributes"]["dak_type"] << "\n";
+        if (co.value()["type"] == "Building" && co.value()["attributes"]["dak_type"] != "no points"){
+//            std::cout << co.key() << std::endl;
+//            std::cout << co.value()["attributes"]["dak_type"] << "\n";
             dak_min = co.value()["attributes"]["h_dak_min"];
             dak_max = co.value()["attributes"]["h_dak_max"];
             maaiveld = co.value()["attributes"]["h_maaiveld"];
             h_from_ground = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld);
             dak_dif = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld) / 3.0;
-            */
+
             //std::cout << "Dak Max: " << dak_max << std::endl;
             //std::cout << "Dak Min: " << dak_min << std::endl;
             //std::cout << "Maaiveld: " << maaiveld << std::endl;
             //std::cout << "Height from Ground: " << h_from_ground << std::endl;
 
-            /*
+
             if (dak_dif / ceil(dak_dif) >= 0.87) {no_floor = ceil(dak_dif);}
             else {no_floor = dak_dif;}
 
-            std::cout << "No of Floors: " << no_floor << std::endl;
-             */
+            //std::cout << "No of Floors: " << no_floor << std::endl;
+
             //std::cout << std::endl;
-            //co.value()["attributes"]["no_floor"] = no_floor;
+            co.value()["attributes"]["no_floor"] = no_floor;
         }
 
     }
 
 }
+
+void crossProduct(int vect_A[3], int vect_B[3], int cross_P[3]) {
+
+    cross_P[0] = vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1];
+    cross_P[1] = vect_A[2] * vect_B[0] - vect_A[0] * vect_B[2];
+    cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0];
+}
+
+double areaTriangle(int cross_P[3]) {
+
+    double magnitude;
+    cross_P[0] = (cross_P[0] * cross_P[0]);
+    cross_P[1] = (cross_P[1] * cross_P[1]);
+    cross_P[2] = (cross_P[2] * cross_P[2]);
+    magnitude = sqrt((cross_P[0] + cross_P[1], cross_P[2]));
+    return (magnitude/2.);
+}
+
+// getCOAreas(json &j) {
+
+//}
 
 // OLD CODE, TO BE REMOVED FOR FINAL VERSION:
 
