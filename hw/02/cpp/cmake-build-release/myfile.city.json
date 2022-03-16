@@ -16,6 +16,7 @@
         "identificatie": "NL.IMBAG.Pand.0503100000018416",
         "kas_warenhuis": false,
         "lod11_replace": false,
+        "number_of_floors": null,
         "ondergronds_type": "above ground",
         "oorspronkelijkbouwjaar": 1928,
         "pw_actueel": "yes",
@@ -31,7 +32,6 @@
         "val3dity_codes_lod12": "[]",
         "val3dity_codes_lod13": "[]",
         "val3dity_codes_lod22": "[]",
-        "volume": null,
         "voorkomenidentificatie": 1
       },
       "children": [
@@ -495,6 +495,7 @@
         "identificatie": "NL.IMBAG.Pand.0503100000030277",
         "kas_warenhuis": false,
         "lod11_replace": false,
+        "number_of_floors": null,
         "ondergronds_type": "above ground",
         "oorspronkelijkbouwjaar": 2009,
         "pw_actueel": "yes",
@@ -510,7 +511,6 @@
         "val3dity_codes_lod12": "[]",
         "val3dity_codes_lod13": "[]",
         "val3dity_codes_lod22": "[]",
-        "volume": null,
         "voorkomenidentificatie": 1
       },
       "children": [

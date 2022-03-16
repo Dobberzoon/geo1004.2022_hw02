@@ -43,7 +43,8 @@ int     get_no_roof_surfaces(json &j);
 void    list_all_vertices(json& j);
 void    visit_roofsurfaces(json &j);
 void    get_roof_height(json&j);
-int    get_building_height(json &j);
+int     get_building_height(json &j);
+void    roof_orientation(json &j); // using the Newells method
 
 int main(int argc, const char * argv[]) {
 
@@ -73,17 +74,19 @@ int main(int argc, const char * argv[]) {
             nobuildings += 1;
         }
     }
+
     std::cout << "There are " << nobuildings << " Buildings in the file" << std::endl;
 
     //-- print out the number of vertices in the file
     std::cout << "Number of vertices " << j["vertices"].size() << std::endl;
 
     get_building_height(j);
+    roof_orientation(j);
 
     //-- add an attribute "volume"
     for (auto& co : j["CityObjects"]) {
         if (co["type"] == "Building") {
-            co["attributes"]["volume"];
+            co["attributes"]["number_of_floors"];
         }
     }
 
@@ -122,10 +125,24 @@ void visit_roofsurfaces(json &j) {
     }
 }
 
-//void heronsArea(&roof_surface){
-//    for (auto roof : roof_surface);
-//
-//}
+void roof_orientation(json &j) {
+    for (auto& co : j["CityObjects"].items()) {
+//        std::vector<double> roof_surface; // put the roof surfaces and herons formula and list all vertices
+        for (auto& g : co.value()["geometry"]) {
+            if (g["type"] == "Solid") {
+                for (int i = 0; i < g["boundaries"].size(); i++) {
+                    for (int j = 0; j < g["boundaries"][i].size(); j++) {
+                        int sem_index = g["semantics"]["values"][i][j];
+                        if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") == 0) {
+                            std::cout << "RoofSurface: " << g["boundaries"][i][j] << std::endl;
+                        }
+                    }
+                }
+            }
+//            heronsArea(roof_surface);
+        }
+    }
+}
 
 
 // Returns the number of 'RooSurface' in the CityJSON model
@@ -147,11 +164,11 @@ int get_no_roof_surfaces(json &j) {
     return total;
 }
 
-
 // CityJSON files have their vertices compressed: https://www.cityjson.org/specs/1.1.1/#transform-object
 // this function visits all the surfaces and print the (x,y,z) coordinates of each vertex encountered
 void list_all_vertices(json& j) {
     for (auto& co : j["CityObjects"].items()) {
+        std::cout << "list_all_vertices" << std::endl;
         std::cout << "= CityObject: " << co.key() << std::endl;
         for (auto& g : co.value()["geometry"]) {
             if (g["type"] == "Solid") {
@@ -171,11 +188,11 @@ void list_all_vertices(json& j) {
                 }
             }
         }
+        std::cout << "---" << std::endl;
     }
 }
 
-
-int get_building_height(json &j) {
+int get_building_floors(json &j) {
     float dak_min, dak_max, dak_dif, maaiveld, h_from_ground ;
     int no_floors;
     for (auto &co: j["CityObjects"].items()) {
@@ -201,7 +218,6 @@ int get_building_height(json &j) {
             std::cout << "No of Floors: " << no_floors << std::endl;
             std::cout << std::endl;
         }
-        return no_floors;
     }
 }
 
@@ -209,11 +225,9 @@ int get_building_height(json &j) {
 //std::cout << "= CityObject: " << co.key() << std::endl;
 //for (auto& g : co.value()["geometry"]) {
 
-
-
-////        for (auto &co: j["CityObjects"]) {
+//        for (auto &co: j["CityObjects"]) {
 //            if (co["type"] == "Building") {
-////            std::cout << "= CityObject: " << co.key() << std::endl;
+//            std::cout << "= CityObject: " << co.key() << std::endl;
 //                dak_min = co["attributes"]["h_dak_min"];
 //                dak_max = co["attributes"]["h_dak_max"];
 //                maaiveld = co["attributes"]["h_maaiveld"];
@@ -223,5 +237,3 @@ int get_building_height(json &j) {
 ////            }
 //        }
 //    }
-
-
