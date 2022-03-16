@@ -68,9 +68,44 @@ float heron(std::vector<std::vector<double>>vic){
     return area;
 }
 
+double orientation(std::vector<double>norm){
+    std::string dir;
+    double leng=sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2]);
+    double cosf=norm[1]/leng;
+    double f=acos(cosf);
+
+     if(f==90) {dir="N";}
+     else if(f>90 && f<=135) {dir="NW";}
+     else if(f>135 && f<=180) {dir="W";}
+     else if(f>180 && f<=225) {dir="SW";}
+     else if(f>225 && f<=270) {dir="S";}
+     else if(f>270 && f<=315) {dir="SE";}
+     else if (f>315 && (f<=360 || f==0)) {dir="E";}
+     else if (f>0 && f<=45) {dir="NW";}
+
+     std::cout<<f;}
+
+std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices){
+    // empty vector and empty variables to hold the normal later on
+    std::vector<double> normal(3);
+    double nx = 0, ny = 0, nz = 0;
+
+    for (int v = 0; v < vertices.size(); v++){
+        std::vector<double> current = vertices[v];
+        std::vector<double> next = vertices[(v+1)%vertices.size()];
+
+        nx += (current[1] - next[1]) * (current[2] + next[2]);
+        ny += (current[2] - next[2]) * (current[0] + next[0]);
+        nz += (current[0] - next[0]) * (current[1] + next[1]);
+    }
+
+    //double norm = std::sqrt( pow(nx, 2) + pow(ny, 2) + pow(nz, 2));
+    normal = {nx, ny, nz};
+    std::cout << "normal vector: " << nx<< ", " << ny << ", " << nz << std::endl;
+    return normal;
+}
 
 int main(int argc, const char * argv[]) {
-
   //-- reading the file with nlohmann json: https://github.com/nlohmann/json  
   std::ifstream input("../../data/twob1.json");
   json j;
@@ -87,7 +122,9 @@ int main(int argc, const char * argv[]) {
 
   //no_of_floors(j);
     //vertices_roof;
-    list_all_vertices01(j);
+    //list_all_vertices01(j);
+    //roofSurfaceArea(j);
+    extractPoly(j);
 
 
   //-- print out the number of Buildings in the file
@@ -119,8 +156,10 @@ int main(int argc, const char * argv[]) {
   std::ofstream o("myfile.city.json");
   o << j.dump(2) << std::endl;
   o.close();
-
+  //float x=heron(test);
+  //std::cout<<"simple heron "<<x;
   return 0;
+
 }
 
 
@@ -230,7 +269,7 @@ void vertices_roof(json& j) {
         }*/
         }
 
-void list_all_vertices01(json& j) {
+/*void list_all_vertices01(json& j) {
 
     float ar, roof_area = 0.00;
     std::vector<std::vector<double>> triangle;
@@ -281,7 +320,7 @@ void list_all_vertices01(json& j) {
     }
 
 }
-
+*/
 
 /*for(auto i:triangle)
 {std::cout<<i[0]<<" "<<i[1]<<std::endl;}*/
@@ -298,3 +337,138 @@ void list_all_vertices01(json& j) {
     area=sqrt(sp*(sp-a)*(sp-b)*(sp-c));
     return area;
 }*/
+
+void roofSurfaceArea(json &j) {
+    for (auto &co: j["CityObjects"].items()) {
+        for (auto &g: co.value()["geometry"]) {
+            if (g["type"] == "Solid") {
+                double area = 0;
+                for (int i = 0; i < g["boundaries"].size(); i++) {
+                    for (int k = 0; k < g["boundaries"][i].size(); k++) {
+                        int sem_index = g["semantics"]["values"][i][k];
+                        if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") ==
+                            0)
+                        {
+                            std::cout << "RoofSurface: " << g["boundaries"][i][k] << std::endl;
+                            std::vector<std::vector<double>> triangle;
+                            std::vector<double> a;
+                            std::vector<double> b;
+                            std::vector<double> c;
+                            int ax, ay, bx, by, cx, cy;
+                            double AX, AY, BX, BY, CX, CY;
+                            ax = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>();
+                            ay = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][1].get<int>();
+
+                            bx = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][0].get<int>();
+                            by = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][1].get<int>();
+
+                            cx = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][0].get<int>();
+                            cy = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][1].get<int>();
+
+                            AX = (ax * j["transform"]["scale"][0].get<double>()) +
+                                 j["transform"]["translate"][0].get<double>();
+                            AY = (ay * j["transform"]["scale"][1].get<double>()) +
+                                 j["transform"]["translate"][1].get<double>();
+
+                            BX = (bx * j["transform"]["scale"][0].get<double>()) +
+                                 j["transform"]["translate"][0].get<double>();
+                            BY = (by * j["transform"]["scale"][1].get<double>()) +
+                                 j["transform"]["translate"][1].get<double>();
+
+                            CX = (cx * j["transform"]["scale"][0].get<double>()) +
+                                 j["transform"]["translate"][0].get<double>();
+                            CY = (cy * j["transform"]["scale"][1].get<double>()) +
+                                 j["transform"]["translate"][1].get<double>();
+
+                            a = {AX, AY};
+                            triangle.emplace_back(a);
+                            b = {BX, BY};
+                            triangle.emplace_back(b);
+                            c = {CX, CY};
+                            triangle.emplace_back(c);
+                            area = heron(triangle)+area;
+                            std::cout << "area triangle: " << area << std::endl;}
+                            }
+                        }
+                std::cout << "Area of NEW ROOF BRO: " << area << std::endl;
+                std::cout << co.key() << std::endl;
+                    }
+                }
+
+            }
+        }
+
+void extractPoly(json &j) {
+    for (auto &co: j["CityObjects"].items()) {
+        for (auto &g: co.value()["geometry"]) {
+            if (g["type"] == "Solid") {
+                for (int i = 0; i < g["boundaries"].size(); i++) {
+                    for (int k = 0; k < g["boundaries"][i].size(); k++) {
+                        int sem_index = g["semantics"]["values"][i][k];
+
+                        if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") ==
+                            0) {
+                            double orient;
+                            std::vector<std::vector<double>> coords;
+                            int ax, ay, az, bx, by, bz, cx, cy, cz;
+                            double p1x, p1y, p1z, p2x, p2y, p2z, p3x, p3y, p3z;
+
+                            ax = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>();
+                            ay = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][1].get<int>();
+                            az = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][2].get<int>();
+
+                            bx = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][0].get<int>();
+                            by = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][1].get<int>();
+                            bz = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][2].get<int>();
+
+                            cx = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][0].get<int>();
+                            cy = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][1].get<int>();
+                            cz = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][2].get<int>();
+
+                            p1x = (ax * j["transform"]["scale"][0].get<double>()) +
+                                  j["transform"]["translate"][0].get<double>();
+                            p1y = (ay * j["transform"]["scale"][1].get<double>()) +
+                                  j["transform"]["translate"][1].get<double>();
+                            p1z = (az * j["transform"]["scale"][2].get<double>()) +
+                                  j["transform"]["translate"][2].get<double>();
+
+                            p2x = (bx * j["transform"]["scale"][0].get<double>()) +
+                                  j["transform"]["translate"][0].get<double>();
+                            p2y = (by * j["transform"]["scale"][1].get<double>()) +
+                                  j["transform"]["translate"][1].get<double>();
+                            p2z = (bz * j["transform"]["scale"][2].get<double>()) +
+                                  j["transform"]["translate"][2].get<double>();
+
+                            p3x = (cx * j["transform"]["scale"][0].get<double>()) +
+                                  j["transform"]["translate"][0].get<double>();
+                            p3y = (cy * j["transform"]["scale"][1].get<double>()) +
+                                  j["transform"]["translate"][1].get<double>();
+                            p3z = (cz * j["transform"]["scale"][2].get<double>()) +
+                                  j["transform"]["translate"][2].get<double>();
+
+                            std::vector<double> P1 = {p1x, p1y, p1z};
+                            std::vector<double> P2 = {p2x, p2y, p2z};
+                            std::vector<double> P3 = {p3x, p3y, p3z};
+                            coords.emplace_back(P1);
+                            coords.emplace_back(P2);
+                            coords.emplace_back(P3);
+                            /*for (auto i:coords){
+                                for(auto j:i){
+                                std::cout<<j<<" ";
+                                std::cout<<"\n";}}*/
+                            std::vector<double>normie= surfaceNormal(coords);
+
+                            /*for(int i=0; i<normie.size();i++){
+                                std::cout<<normie[i]<<' '<<"\n";
+                            }*/
+                            orient=orientation(normie);
+                            std::cout<<orient<<" ";
+                        }
+                    }
+
+
+                }
+            }
+        }
+    }
+}
