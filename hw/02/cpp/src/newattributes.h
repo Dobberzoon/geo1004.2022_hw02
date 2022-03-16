@@ -20,6 +20,6 @@ double volumeTetra(double &determinant);
 double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<double>> &vertices,
                     std::vector<std::vector<int>> &face_indices);
 void getCOVolumes(json &j);
-int getCOBuildingHeights(json &j);
+void getCOBuildingHeights(json &j);
 
 #endif //CJDEMO_VOLUME_H
