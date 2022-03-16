@@ -58,7 +58,7 @@ int main(int argc, const char * argv[]) {
     // int noroofsurfaces = get_no_roof_surfaces(j);
     // std::cout << "Total RoofSurface: " << noroofsurfaces << std::endl;
 
-    // list_all_vertices(j);
+     list_all_vertices(j);
 
 //    visit_roofsurfaces(j);
 //
@@ -167,7 +167,7 @@ int get_no_roof_surfaces(json &j) {
 void list_all_vertices(json& j) {
     for (auto& co : j["CityObjects"].items()) {
         std::cout << "list_all_vertices" << std::endl;
-        std::cout << "= CityObject: " << co.key() << std::endl;
+        std::cout << "=> CityObject: " << co.key() << std::endl;
         for (auto& g : co.value()["geometry"]) {
             if (g["type"] == "Solid") {
                 for (auto& shell : g["boundaries"]) {
