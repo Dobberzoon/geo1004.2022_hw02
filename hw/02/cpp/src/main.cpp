@@ -43,7 +43,7 @@ int     get_no_roof_surfaces(json &j);
 void    list_all_vertices(json& j);
 void    visit_roofsurfaces(json &j);
 void    get_roof_height(json&j);
-int     get_building_height(json &j);
+void     get_building_floors(json &j);
 void    roof_orientation(json &j); // using the Newells method
 
 int main(int argc, const char * argv[]) {
@@ -74,14 +74,12 @@ int main(int argc, const char * argv[]) {
             nobuildings += 1;
         }
     }
-
     std::cout << "There are " << nobuildings << " Buildings in the file" << std::endl;
 
     //-- print out the number of vertices in the file
     std::cout << "Number of vertices " << j["vertices"].size() << std::endl;
 
-    get_building_height(j);
-    roof_orientation(j);
+    get_building_floors(j);
 
     //-- add an attribute "volume"
     for (auto& co : j["CityObjects"]) {
@@ -192,12 +190,12 @@ void list_all_vertices(json& j) {
     }
 }
 
-int get_building_floors(json &j) {
+void get_building_floors(json &j) {
     float dak_min, dak_max, dak_dif, maaiveld, h_from_ground ;
     int no_floors;
     for (auto &co: j["CityObjects"].items()) {
 //        std::cout << "CityObject: " << co.key() << std::endl;
-        if (co.value()["type"] == "Building"){
+        if (co.value()["type"] == "Building") {
             std::cout << co.key() << std::endl;
             dak_min = co.value()["attributes"]["h_dak_min"];
             dak_max = co.value()["attributes"]["h_dak_max"];
@@ -213,7 +211,8 @@ int get_building_floors(json &j) {
             if (dak_dif / ceil(dak_dif) >= 0.87) {
                 no_floors = ceil(dak_dif);
             }
-            else {no_floors = dak_dif;}
+            else {no_floors = dak_dif;
+            }
 
             std::cout << "No of Floors: " << no_floors << std::endl;
             std::cout << std::endl;
