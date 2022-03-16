@@ -105,7 +105,7 @@ int main(int argc, const char * argv[]) {
 
 
     //-- write to disk the modified city model (myfile.city.json)
-    std::ofstream o("../../data/myfile_new_with_volumes_TESTFUNC.triangulated.city.json");
+    std::ofstream o("../../data/myfile_new_with_volumes_and_floors.triangulated.city.json");
     o << j.dump(2) << std::endl;
     o.close();
 

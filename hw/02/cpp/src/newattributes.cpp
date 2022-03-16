@@ -181,36 +181,44 @@ void getCOVolumes(json &j) {
 void getCOBuildingHeights(json &j) {
     float dak_min, dak_max, dak_dif, maaiveld, h_from_ground ;
     int no_floor;
+
     for (auto &co: j["CityObjects"].items()) {
 //        std::cout << "CityObject: " << co.key() << std::endl;
-        if (co.value()["type"] == "Building"){
+        if (co.value()["type"] == "Building" && co.value()["attributes"]["dak_type"] == "no points"){
             std::cout << co.key() << std::endl;
+            /*
+
+             std::cout << co.value()["attributes"]["dak_type"] << "\n";
             dak_min = co.value()["attributes"]["h_dak_min"];
             dak_max = co.value()["attributes"]["h_dak_max"];
             maaiveld = co.value()["attributes"]["h_maaiveld"];
             h_from_ground = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld);
             dak_dif = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld) / 3.0;
-
+            */
             //std::cout << "Dak Max: " << dak_max << std::endl;
             //std::cout << "Dak Min: " << dak_min << std::endl;
             //std::cout << "Maaiveld: " << maaiveld << std::endl;
             //std::cout << "Height from Ground: " << h_from_ground << std::endl;
 
+            /*
             if (dak_dif / ceil(dak_dif) >= 0.87) {no_floor = ceil(dak_dif);}
             else {no_floor = dak_dif;}
 
-            //std::cout << "No of Floors: " << no_floor << std::endl;
+            std::cout << "No of Floors: " << no_floor << std::endl;
+             */
             //std::cout << std::endl;
+            //co.value()["attributes"]["no_floor"] = no_floor;
         }
-        co.value()["attributes"]["no_floor"] = no_floor;
+
     }
+
 }
 
 // OLD CODE, TO BE REMOVED FOR FINAL VERSION:
 
 /*
 double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<double>> &vertices_object,
-                    std::vector<std::vector<int>> &face_indices_object) {
+                    std::vector<std::vector<int>> &face_indices_object) { */
     /*
         volumeObject takes an outside point and triangulated surfaces of an object to calculate the volume
         of said object. This is achieved by summation of signed volumes of corresponding tetrahedra of object
@@ -221,6 +229,8 @@ double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<
                 - surfaces list of (triangulated) object
         Output: - volume (in given units, double precision)
      */
+
+
 /*
 double result = 0.;
 for (auto i : face_indices_object) {
