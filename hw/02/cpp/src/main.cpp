@@ -121,7 +121,11 @@ int main(int argc, const char * argv[]) {
     //std::cout << std::setprecision(8) << std::fixed << "volume sum: " << volume_sum << "\n";
 
 
-    volumeAllObjects(j);
+    // Get volume of all CityObjects, and update the cityjson
+    getCOVolumes(j);
+
+    // Get number of floors of all CityObjects, and update the cityjson
+    getCOBuildingHeights(j);
 
     /*
     // This loop traverses all CityObjects and calculates each volume, writing it as an attribute

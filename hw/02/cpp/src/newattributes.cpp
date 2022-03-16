@@ -137,9 +137,9 @@ double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<
 }
 
 
-void volumeAllObjects(json &j) {
+void getCOVolumes(json &j) {
     /*
-        volumeAllObjects calculates the volume of each Building (CityObject) in a given cityjson file directly,
+        getVolumeAllObjects calculates the volume of each Building (CityObject) in a given cityjson file directly,
         and writes it as the attribute "volume" to each CityObject in m^3
 
         Input:  - cityjson
@@ -148,7 +148,7 @@ void volumeAllObjects(json &j) {
     std::vector<double> outside_point = { j["metadata"]["geographicalExtent"][0].get<double>() - 1.,
                                           j["metadata"]["geographicalExtent"][1].get<double>() - 1.,
                                           j["metadata"]["geographicalExtent"][2].get<double>() - 1.};
-    std::string unit_volume = "m^3";
+
     for (auto& co : j["CityObjects"].items()) {
 
         int count_children2 = 0;
@@ -205,7 +205,37 @@ void volumeAllObjects(json &j) {
                 }
             }
             // Write value as an attribute to cityjson
-            co.value()["attributes"]["volume"] = std::to_string(volume) + unit_volume;
+            co.value()["attributes"]["volume"] = std::to_string(volume);
         }
+    }
+}
+
+int getCOBuildingHeights(json &j) {
+    float dak_min, dak_max, dak_dif, maaiveld, h_from_ground ;
+    int no_floors;
+    for (auto &co: j["CityObjects"].items()) {
+//        std::cout << "CityObject: " << co.key() << std::endl;
+        if (co.value()["type"] == "Building"){
+            std::cout << co.key() << std::endl;
+            dak_min = co.value()["attributes"]["h_dak_min"];
+            dak_max = co.value()["attributes"]["h_dak_max"];
+            maaiveld = co.value()["attributes"]["h_maaiveld"];
+            h_from_ground = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld);
+            dak_dif = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld) / 3.0;
+
+            //std::cout << "Dak Max: " << dak_max << std::endl;
+            //std::cout << "Dak Min: " << dak_min << std::endl;
+            //std::cout << "Maaiveld: " << maaiveld << std::endl;
+            //std::cout << "Height from Ground: " << h_from_ground << std::endl;
+
+            if (dak_dif / ceil(dak_dif) >= 0.87) {
+                no_floors = ceil(dak_dif);
+            }
+            else {no_floors = dak_dif;}
+
+            //std::cout << "No of Floors: " << no_floors << std::endl;
+            //std::cout << std::endl;
+        }
+        return no_floors;
     }
 }
