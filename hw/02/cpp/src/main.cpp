@@ -44,16 +44,42 @@ int   get_no_roof_surfaces(json &j);
 void  list_all_vertices(json &j);
 void  visit_roofsurfaces(json &j);
 void store_all_vertices(json &j, std::vector<std::vector<double>> &all_vertices);
+void roofSurfaceArea(json &j);
 
+double distance (std::vector<double> begin_v, std::vector<double> end_v) {
+    std::vector<double> side = {0., 0., 0.};
+    std::transform(begin_v.begin(), begin_v.end(), end_v.begin(),
+                                              side.begin(), std::minus<double>());
+
+    double result = sqrt((side[0]*side[0]) + (side[1] * side[1]) + (side[2] * side[2]));
+    return result;
+}
+
+double heron (std::vector<std::vector<double>> triangle) {
+    double area, sp, a, b, c;
+    a = distance(triangle[0], triangle[1]);
+    b = distance(triangle[1], triangle[2]);
+    c = distance(triangle[2], triangle[0]);
+
+    sp = (a+b+c)/2;
+
+    area = sqrt(sp*(sp-a)*(sp-b)*(sp-c));
+    return area;
+}
 
 
 int main(int argc, const char * argv[]) {
 
     //-- reading the file with nlohmann json: https://github.com/nlohmann/json
-    std::ifstream input("../../data/myfile_new.triangulated.city.json");
+    std::ifstream input("../../data/NL.IMBAG.Pand.0503100000017003-0_original_upgraded.city.json");
     json j;
     input >> j;
     input.close();
+
+    std::ifstream input2("../../data/3dbag_v210908_fd2cee53_5910.json");
+    json j2;
+    input2 >> j2;
+    input2.close();
 
     //-- get total number of RoofSurface in the file
     int noroofsurfaces = get_no_roof_surfaces(j);
@@ -76,24 +102,25 @@ int main(int argc, const char * argv[]) {
     std::cout << "Number of vertices " << j["vertices"].size() << std::endl;
 
 
-    std::string file_in = "../../data/one_building.obj";
+    //std::string file_in = "../../data/cube_triangulated_copy.obj";
 
     // ## Read OBJ file (FOR TESTING PURPOSES) ##
     // The vertices and faces are read and stored into vectors.
 
-    std::vector<std::vector<double>> vertices_one_building;
-    std::vector<std::vector<int>> face_indices_one_building;
-    readObj(file_in, vertices_one_building, face_indices_one_building);
+    //std::vector<std::vector<double>> vertices_one_building;
+    //std::vector<std::vector<int>> face_indices_one_building;
+    //readObj(file_in, vertices_one_building, face_indices_one_building);
 
 
     // ## Calculate volume of object (works on .obj) ##
-    //double volume_sum = volumeObject(outside_point_close, vertices_one_building, face_indices_one_building);
+    //std::vector<double> outside_point_same_vertex = {1., 1., -1.};
+    //double volume_sum = volumeObject(outside_point_same_vertex, vertices_one_building, face_indices_one_building);
 
+    //std::cout << "size of vertices_one_building: " << vertices_one_building.size() << "\n";
+    //std::cout << "all the vertices_one_building of: " << file_in << "\n";
 
-    std::cout << "size of vertices_one_building: " << vertices_one_building.size() << "\n";
-    std::cout << "all the vertices_one_building of: " << file_in << "\n";
-
-    std::cout << "face_indices_one_building.size(): " << face_indices_one_building.size() << std::endl;
+    //std::cout << "face_indices_one_building.size(): " << face_indices_one_building.size() << std::endl;
+//    std::cout << "Volume of cube with outside point on same vertex: " << volume_sum << std::endl;
 
 
     // Get volume of all CityObjects, and update the cityjson
@@ -102,10 +129,27 @@ int main(int argc, const char * argv[]) {
     // Get number of floors of all CityObjects, and update the cityjson
     getCOBuildingHeights(j);
 
+    roofSurfaceArea(j);
+
+    std::vector<double> a, b;
+    a = {1.5, 1.5, 1.5};
+    b = {2.5, 2.5, 2.5};
+    std::cout << "DISTANCE BRO: " << distance(a, b) << std::endl;
+
+    std::vector<double> vecA = { 3., -5., 4. };
+    std::vector<double> vecB = { 2.,  6., 5. };
+    std::vector<double> crossP = crossProduct(vecA, vecB);
+
+    std::cout << "CROSSP BRO: " << std::endl;
+    std::cout << "MAGNITUDE BRO: " << areaTriangle(crossP) << std::endl;
+
+    for (auto i : crossP ) {std::cout << i << " ";}
+
+    std::cout << std::endl;
 
 
     //-- write to disk the modified city model (myfile.city.json)
-    std::ofstream o("../../data/myfile_new_with_volumes_and_floors.triangulated.city.json");
+    std::ofstream o("../../data/NL.IMBAG.Pand.0503100000017003-0_original_upgraded+volume+floor+area.json");
     o << j.dump(2) << std::endl;
     o.close();
 
@@ -177,6 +221,143 @@ void list_all_vertices(json& j) {
             }
           }
         }
+    }
+}
+
+
+
+void roofSurfaceArea(json &j) {
+    for (auto &co: j["CityObjects"].items()) {
+        for (auto &g: co.value()["geometry"]) {
+            if (g["type"] == "Solid") {
+                double area = 0.;
+                double area2 = 0.;
+                int sem_index_extended;
+                for (int i = 0; i < g["boundaries"].size(); i++) {
+                    for (int k = 0; k < g["boundaries"][i].size(); k++) {
+                        int sem_index = g["semantics"]["values"][i][k];
+                        sem_index_extended = g["semantics"]["surfaces"].size();
+
+                        if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") == 0) {
+
+                            std::cout << "RoofSurface: " << g["boundaries"][i][k] << std::endl;
+
+                            std::vector<std::vector<double>> points_set;
+
+                            for (auto i : g["boundaries"][i][k][0]) {
+                                std::vector<double> xyz;
+                                double x, y, z;
+                                x = (j["vertices"][i.get<int>()][0].get<int>() * j["transform"]["scale"][0].get<double>())
+                                    + j["transform"]["translate"][0].get<double>();
+                                y = (j["vertices"][i.get<int>()][1].get<int>() * j["transform"]["scale"][1].get<double>())
+                                    + j["transform"]["translate"][1].get<double>();
+                                z = (j["vertices"][i.get<int>()][2].get<int>() * j["transform"]["scale"][2].get<double>())
+                                    + j["transform"]["translate"][2].get<double>();
+                                std::cout << "xyz: " << x << " " << y << " " << z << std::endl;
+                                xyz = {x, y, z};
+                                points_set.emplace_back(xyz);
+                            }
+                            std::vector<double> baryCenterFace = {0., 0., 0.};
+                            for (auto i : points_set) {
+                                baryCenterFace[0] += i[0];
+                                baryCenterFace[1] += i[1];
+                                baryCenterFace[2] += i[2];
+                            }
+
+                        std::cout << "baryCenterFace before fraction: " << std::endl;
+                            for (auto i : baryCenterFace) {
+                                std::cout << i << " ";
+                            }
+                            std::cout << std::endl;
+
+                            for (int i = 0; i < baryCenterFace.size(); i++) {
+                                baryCenterFace[i] = baryCenterFace[i] / points_set.size();
+                            }
+
+                            std::cout << "baryCenterFace after fraction: " << std::endl;
+                            for (auto i : baryCenterFace) {
+                                std::cout << i << " ";
+                            }
+                            std::cout << std::endl;
+                            std::cout << "points_set.size(): " << points_set.size() << std::endl;
+
+
+
+/*                            std::vector<std::vector<double>> triangle;
+                            std::vector<double> a, b, c;
+                            int ax, ay, az, bx, by, bz, cx, cy, cz;
+                            double AX, AY, AZ, BX, BY, BZ, CX, CY, CZ;
+                            ax = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>();
+                            ay = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][1].get<int>();
+                            az = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][2].get<int>();
+
+                            bx = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][0].get<int>();
+                            by = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][1].get<int>();
+                            bz = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][2].get<int>();
+
+                            cx = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][0].get<int>();
+                            cy = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][1].get<int>();
+                            cz = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][2].get<int>();
+
+                            AX = (ax * j["transform"]["scale"][0].get<double>()) +
+                                 j["transform"]["translate"][0].get<double>();
+                            AY = (ay * j["transform"]["scale"][1].get<double>()) +
+                                 j["transform"]["translate"][1].get<double>();
+                            AZ = (az * j["transform"]["scale"][2].get<double>()) +
+                                 j["transform"]["translate"][2].get<double>();
+
+
+                            BX = (bx * j["transform"]["scale"][0].get<double>()) +
+                                 j["transform"]["translate"][0].get<double>();
+                            BY = (by * j["transform"]["scale"][1].get<double>()) +
+                                 j["transform"]["translate"][1].get<double>();
+                            BZ = (bz * j["transform"]["scale"][2].get<double>()) +
+                                 j["transform"]["translate"][2].get<double>();
+
+
+                            CX = (cx * j["transform"]["scale"][0].get<double>()) +
+                                 j["transform"]["translate"][0].get<double>();
+                            CY = (cy * j["transform"]["scale"][1].get<double>()) +
+                                 j["transform"]["translate"][1].get<double>();
+                            CZ = (cz * j["transform"]["scale"][2].get<double>()) +
+                                 j["transform"]["translate"][2].get<double>();
+
+
+                            a = {AX, AY, AZ};
+                            triangle.emplace_back(a);
+                            b = {BX, BY, BZ};
+                            triangle.emplace_back(b);
+                            c = {CX, CY, CZ};
+                            triangle.emplace_back(c);
+                            area += heron(triangle); // old
+
+                            std::vector<double> side1 = {0., 0., 0.};
+                            std::vector<double> side2 = {0., 0., 0.};
+                            std::transform(a.begin(), a.end(), c.begin(),
+                                           side1.begin(), std::minus<double>());
+
+                            std::transform(a.begin(), a.end(), b.begin(),
+                                           side2.begin(), std::minus<double>());
+
+                            std::vector<double> crossP = crossProduct(side1, side2);
+                            area2 += areaTriangle(crossP);
+                            std::cout << "CROSSP: ";
+                            for (auto i : crossP) {std::cout << i << " ";}
+                            std::cout << std::endl;
+                            //std::cout << "area triangle: " << area << std::endl;
+                            g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
+                            g["semantics"]["surfaces"][sem_index_extended]["area"] = area;
+                            g["semantics"]["values"][i][k] = sem_index_extended;
+                            sem_index_extended++;*/
+                        }
+                    }
+                }
+//                std::cout << "Area of NEW ROOF BRO: " << area << std::endl;
+//                std::cout << "Area2 of NEW ROOF BRO: " << area2 << std::endl;
+//                std::cout << co.key() << std::endl;
+            }
+        }
+
     }
 }
 
