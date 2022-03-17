@@ -45,6 +45,7 @@ void  list_all_vertices(json &j);
 void  visit_roofsurfaces(json &j);
 void store_all_vertices(json &j, std::vector<std::vector<double>> &all_vertices);
 void roofSurfaceArea(json &j);
+void extractPoly(json& j);
 
 double distance (std::vector<double> begin_v, std::vector<double> end_v) {
     std::vector<double> side = {0., 0., 0.};
@@ -65,6 +66,46 @@ double heron (std::vector<std::vector<double>> triangle) {
 
     area = sqrt(sp*(sp-a)*(sp-b)*(sp-c));
     return area;
+}
+
+std::string orientation(std::vector<double>norm){
+    std::string dir;
+    double x=norm[0];
+    double y=norm[1];
+    double z=norm[2];
+
+
+    if(z<0.1 && z>-0.1){dir="horizontal";}
+    else{
+        if(x==0 && y>0) {dir="N";}
+        else if(x<0 && y>0) {dir="NW";}
+        else if(x<0 && y==0) {dir="W";}
+        else if(x<0 && y<0) {dir="SW";}
+        else if(x==0 && y<0) {dir="S";}
+        else if(y<0 && x>0) {dir="SE";}
+        else if (y==0 && x>0) {dir="E";}
+        else if (y>0 && x>0) {dir="NE";}
+    }
+    return dir;}
+
+std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices){
+    // empty vector and empty variables to hold the normal later on
+    std::vector<double> normal(3);
+    double nx = 0., ny = 0., nz = 0.;
+
+    for (int v = 0; v < vertices.size(); v++){
+        std::vector<double> current = vertices[v];
+        std::vector<double> next = vertices[(v+1)%vertices.size()];
+
+        nx += (current[1] - next[1]) * (current[2] + next[2]);
+        ny += (current[2] - next[2]) * (current[0] + next[0]);
+        nz += (current[0] - next[0]) * (current[1] + next[1]);
+    }
+
+    //double norm = std::sqrt( pow(nx, 2) + pow(ny, 2) + pow(nz, 2));
+    normal = {nx, ny, nz};
+    //std::cout << "normal vector: " << nx<< ", " << ny << ", " << nz << std::endl;
+    return normal;
 }
 
 
@@ -149,9 +190,11 @@ int main(int argc, const char * argv[]) {
     std::cout << "MAGNITUDE BRO: " << areaTriangle(crossP) << std::endl;
     std::cout << std::endl;
 
+//    extractPoly(j);
+
 
     //-- write to disk the modified city model (myfile.city.json)
-    std::ofstream o("../../data/3dbag_original_upgraded+area.json");
+    std::ofstream o("../../data/3dbag_original_upgraded+area+orientation.json");
     o << j.dump(2) << std::endl;
     o.close();
 
@@ -237,8 +280,8 @@ void roofSurfaceArea(json &j) {
     for (auto &co: j["CityObjects"].items()) {
         for (auto &g: co.value()["geometry"]) {
             if (g["type"] == "Solid") {
-                double area = 0.;
-                double area2 = 0.;
+//                double area = 0.;
+//                double area2 = 0.;
                 int sem_index_extended;
                 for (int i = 0; i < g["boundaries"].size(); i++) {
                     for (int k = 0; k < g["boundaries"][i].size(); k++) {
@@ -328,26 +371,12 @@ void roofSurfaceArea(json &j) {
                                     areaSum += areaTriangle(crossP);
                                 }
                             }
-                            std::cout << "areaSum: " << areaSum << std::endl;
+//                            std::cout << "areaSum: " << areaSum << std::endl;
 
-                            g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
-                            g["semantics"]["surfaces"][sem_index_extended]["area"] = areaSum;
-                            g["semantics"]["values"][i][k] = sem_index_extended;
-                            sem_index_extended++;
-
-                            /*for (int e = 0; e < g["boundaries"][i][k][0].size(); e++) {
-                                if (g["boundaries"][i][k][0][e] == g["boundaries"][i][k][0][g["boundaries"][i][k][0].size() - 1]) {
-//                                    std::cout << "found it: " << g["boundaries"][i][k][0][e] << std::endl;
-                                }
-                                else {
-
-                                }
-                            }*/
-
-/*                            std::vector<std::vector<double>> triangle;
-                            std::vector<double> a, b, c;
+                            std::vector<std::vector<double>> coords;
                             int ax, ay, az, bx, by, bz, cx, cy, cz;
-                            double AX, AY, AZ, BX, BY, BZ, CX, CY, CZ;
+                            double p1x, p1y, p1z, p2x, p2y, p2z, p3x, p3y, p3z;
+
                             ax = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>();
                             ay = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][1].get<int>();
                             az = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][2].get<int>();
@@ -360,65 +389,144 @@ void roofSurfaceArea(json &j) {
                             cy = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][1].get<int>();
                             cz = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][2].get<int>();
 
-                            AX = (ax * j["transform"]["scale"][0].get<double>()) +
-                                 j["transform"]["translate"][0].get<double>();
-                            AY = (ay * j["transform"]["scale"][1].get<double>()) +
-                                 j["transform"]["translate"][1].get<double>();
-                            AZ = (az * j["transform"]["scale"][2].get<double>()) +
-                                 j["transform"]["translate"][2].get<double>();
+                            p1x = (ax * j["transform"]["scale"][0].get<double>()) +
+                                  j["transform"]["translate"][0].get<double>();
+                            p1y = (ay * j["transform"]["scale"][1].get<double>()) +
+                                  j["transform"]["translate"][1].get<double>();
+                            p1z = (az * j["transform"]["scale"][2].get<double>()) +
+                                  j["transform"]["translate"][2].get<double>();
 
+                            p2x = (bx * j["transform"]["scale"][0].get<double>()) +
+                                  j["transform"]["translate"][0].get<double>();
+                            p2y = (by * j["transform"]["scale"][1].get<double>()) +
+                                  j["transform"]["translate"][1].get<double>();
+                            p2z = (bz * j["transform"]["scale"][2].get<double>()) +
+                                  j["transform"]["translate"][2].get<double>();
 
-                            BX = (bx * j["transform"]["scale"][0].get<double>()) +
-                                 j["transform"]["translate"][0].get<double>();
-                            BY = (by * j["transform"]["scale"][1].get<double>()) +
-                                 j["transform"]["translate"][1].get<double>();
-                            BZ = (bz * j["transform"]["scale"][2].get<double>()) +
-                                 j["transform"]["translate"][2].get<double>();
+                            p3x = (cx * j["transform"]["scale"][0].get<double>()) +
+                                  j["transform"]["translate"][0].get<double>();
+                            p3y = (cy * j["transform"]["scale"][1].get<double>()) +
+                                  j["transform"]["translate"][1].get<double>();
+                            p3z = (cz * j["transform"]["scale"][2].get<double>()) +
+                                  j["transform"]["translate"][2].get<double>();
 
+                            std::vector<double> P1 = {p1x, p1y, p1z};
+                            std::vector<double> P2 = {p2x, p2y, p2z};
+                            std::vector<double> P3 = {p3x, p3y, p3z};
+                            coords.emplace_back(P1);
+                            coords.emplace_back(P2);
+                            coords.emplace_back(P3);
+                            /*for (auto i:coords){
+                                for(auto j:i){
+                                std::cout<<j<<" ";
+                                std::cout<<"\n";}}*/
+                            std::vector<double> normie = surfaceNormal(coords);
 
-                            CX = (cx * j["transform"]["scale"][0].get<double>()) +
-                                 j["transform"]["translate"][0].get<double>();
-                            CY = (cy * j["transform"]["scale"][1].get<double>()) +
-                                 j["transform"]["translate"][1].get<double>();
-                            CZ = (cz * j["transform"]["scale"][2].get<double>()) +
-                                 j["transform"]["translate"][2].get<double>();
-
-
-                            a = {AX, AY, AZ};
-                            triangle.emplace_back(a);
-                            b = {BX, BY, BZ};
-                            triangle.emplace_back(b);
-                            c = {CX, CY, CZ};
-                            triangle.emplace_back(c);
-                            area += heron(triangle); // old
-
-                            std::vector<double> side1 = {0., 0., 0.};
-                            std::vector<double> side2 = {0., 0., 0.};
-                            std::transform(a.begin(), a.end(), c.begin(),
-                                           side1.begin(), std::minus<double>());
-
-                            std::transform(a.begin(), a.end(), b.begin(),
-                                           side2.begin(), std::minus<double>());
-
-                            std::vector<double> crossP = crossProduct(side1, side2);
-                            area2 += areaTriangle(crossP);
-                            std::cout << "CROSSP: ";
-                            for (auto i : crossP) {std::cout << i << " ";}
-                            std::cout << std::endl;
-                            //std::cout << "area triangle: " << area << std::endl;
+                            /*for(int i=0; i<normie.size();i++){
+                                std::cout<<normie[i]<<' '<<"\n";
+                            }*/
+                            //std::cout << "\n";
+                            //std::cout << orientation(normie);
+                            //std::cout<<orient<<"\n";
                             g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
-                            g["semantics"]["surfaces"][sem_index_extended]["area"] = area;
+                            g["semantics"]["surfaces"][sem_index_extended]["orientation"] = orientation(normie);
                             g["semantics"]["values"][i][k] = sem_index_extended;
-                            sem_index_extended++;*/
+//                            sem_index_extended++;
+
+
+//                            g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
+                            g["semantics"]["surfaces"][sem_index_extended]["area"] = areaSum;
+                            g["semantics"]["values"][i][k] = sem_index_extended;
+                            sem_index_extended++;
                         }
                     }
                 }
-//                std::cout << "Area of NEW ROOF BRO: " << area << std::endl;
-//                std::cout << "Area2 of NEW ROOF BRO: " << area2 << std::endl;
-//                std::cout << co.key() << std::endl;
             }
         }
 
+    }
+}
+
+void extractPoly(json &j) {
+    for (auto &co: j["CityObjects"].items()) {
+        for (auto &g: co.value()["geometry"]) {
+            if (g["type"] == "Solid") {
+                std::cout << "Orientation of surfaces of house" << "\n";
+                int sem_index_extended = 0;
+                for (int i = 0; i < g["boundaries"].size(); i++) {
+                    for (int k = 0; k < g["boundaries"][i].size(); k++) {
+                        int sem_index = g["semantics"]["values"][i][k];
+                        sem_index_extended = g["semantics"]["surfaces"].size();
+                        //std::cout<<"Orientation of surfaces of house"<<"\n";
+                        if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") ==
+                            0) {
+//                            double orient;
+                            std::vector<std::vector<double>> coords;
+                            int ax, ay, az, bx, by, bz, cx, cy, cz;
+                            double p1x, p1y, p1z, p2x, p2y, p2z, p3x, p3y, p3z;
+
+                            ax = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>();
+                            ay = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][1].get<int>();
+                            az = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][2].get<int>();
+
+                            bx = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][0].get<int>();
+                            by = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][1].get<int>();
+                            bz = j["vertices"][g["boundaries"][i][k][0][1].get<int>()][2].get<int>();
+
+                            cx = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][0].get<int>();
+                            cy = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][1].get<int>();
+                            cz = j["vertices"][g["boundaries"][i][k][0][2].get<int>()][2].get<int>();
+
+                            p1x = (ax * j["transform"]["scale"][0].get<double>()) +
+                                  j["transform"]["translate"][0].get<double>();
+                            p1y = (ay * j["transform"]["scale"][1].get<double>()) +
+                                  j["transform"]["translate"][1].get<double>();
+                            p1z = (az * j["transform"]["scale"][2].get<double>()) +
+                                  j["transform"]["translate"][2].get<double>();
+
+                            p2x = (bx * j["transform"]["scale"][0].get<double>()) +
+                                  j["transform"]["translate"][0].get<double>();
+                            p2y = (by * j["transform"]["scale"][1].get<double>()) +
+                                  j["transform"]["translate"][1].get<double>();
+                            p2z = (bz * j["transform"]["scale"][2].get<double>()) +
+                                  j["transform"]["translate"][2].get<double>();
+
+                            p3x = (cx * j["transform"]["scale"][0].get<double>()) +
+                                  j["transform"]["translate"][0].get<double>();
+                            p3y = (cy * j["transform"]["scale"][1].get<double>()) +
+                                  j["transform"]["translate"][1].get<double>();
+                            p3z = (cz * j["transform"]["scale"][2].get<double>()) +
+                                  j["transform"]["translate"][2].get<double>();
+
+                            std::vector<double> P1 = {p1x, p1y, p1z};
+                            std::vector<double> P2 = {p2x, p2y, p2z};
+                            std::vector<double> P3 = {p3x, p3y, p3z};
+                            coords.emplace_back(P1);
+                            coords.emplace_back(P2);
+                            coords.emplace_back(P3);
+                            /*for (auto i:coords){
+                                for(auto j:i){
+                                std::cout<<j<<" ";
+                                std::cout<<"\n";}}*/
+                            std::vector<double> normie = surfaceNormal(coords);
+
+                            /*for(int i=0; i<normie.size();i++){
+                                std::cout<<normie[i]<<' '<<"\n";
+                            }*/
+                            std::cout << "\n";
+                            std::cout << orientation(normie);
+                            //std::cout<<orient<<"\n";
+                            g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
+                            g["semantics"]["surfaces"][sem_index_extended]["orientation"] = orientation(normie);
+                            g["semantics"]["values"][i][k] = sem_index_extended;
+                            sem_index_extended++;
+                        }
+                    }
+
+
+                }
+            }
+        }
     }
 }
 
