@@ -1,5 +1,6 @@
 #include "newattributes.h"
 
+
 void subMatrix(double (&mat)[N][N], double (&temp)[N][N], int p, int q, int n) {
     /*
         Fills a submatrix, a sub-process of function determinantOfMatrix(...).
@@ -102,6 +103,37 @@ double volumeTetra(double &determinant) {
         Output: - volume (double)
      */
     double result = (1./6.) * determinant;
+    return result;
+}
+
+double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<double>> &vertices_object,
+                    std::vector<std::vector<int>> &face_indices_object) {
+    /*
+        volumeObject takes an outside point and triangulated surfaces of an object to calculate the volume
+        of said object. This is achieved by summation of signed volumes of corresponding tetrahedra of object
+        surface triangles and outside point.
+
+        Input:  - Outside point (eg extreme of data extent +/- a margin), in vorm of a coordinate vector.
+                - vertex list of (triangulated) object
+                - surfaces list of (triangulated) object
+        Output: - volume (in given units, double precision)
+     */
+    double result = 0.;
+    for (auto i : face_indices_object) {
+        std::vector<std::vector<double>> vertices_current;
+        for (auto j : i) {
+            std::vector<double> vertex;
+            for (auto k : vertices_object[j]) {
+                vertex.emplace_back(k);
+            }
+            vertices_current.emplace_back(vertex);
+        }
+        vertices_current.emplace_back(outside_point);
+        double mat_tetra_current[N][N];
+        fillMatrix4x4(mat_tetra_current, vertices_current, N);
+        double determinant_tetra_current = determinantOfMatrix(mat_tetra_current, N);
+        result += volumeTetra(determinant_tetra_current);
+    }
     return result;
 }
 
@@ -212,21 +244,24 @@ void getCOBuildingHeights(json &j) {
 
 }
 
-void crossProduct(int vect_A[3], int vect_B[3], int cross_P[3]) {
+std::vector<double> crossProduct(std::vector<double> vect_A, std::vector<double> vect_B) {
 
-    cross_P[0] = vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1];
-    cross_P[1] = vect_A[2] * vect_B[0] - vect_A[0] * vect_B[2];
-    cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0];
+    std::vector<double> cross_P;
+    cross_P.emplace_back(vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1]);
+    cross_P.emplace_back(vect_A[2] * vect_B[0] - vect_A[0] * vect_B[2]);
+    cross_P.emplace_back(vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0]);
+    return cross_P;
 }
 
-double areaTriangle(int cross_P[3]) {
+double areaTriangle(std::vector<double> cross_P) {
 
-    double magnitude;
+    double magnitude, area;
     cross_P[0] = (cross_P[0] * cross_P[0]);
     cross_P[1] = (cross_P[1] * cross_P[1]);
     cross_P[2] = (cross_P[2] * cross_P[2]);
-    magnitude = sqrt((cross_P[0] + cross_P[1], cross_P[2]));
-    return (magnitude/2.);
+    magnitude = sqrt((cross_P[0] + cross_P[1] + cross_P[2]));
+    area = magnitude / 2.;
+    return area;
 }
 
 // getCOAreas(json &j) {

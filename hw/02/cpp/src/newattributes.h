@@ -19,11 +19,11 @@ void fillMatrix4x4(double (&mat)[N][N], std::vector<std::vector<double>> &vertic
 double volumeTetra(double &determinant);
 void getCOVolumes(json &j);
 void getCOBuildingHeights(json &j);
-void crossProduct(int vect_A[3], int vect_B[3], int cross_P[3]);
-double areaTriangle(int cross_P[3]);
+std::vector<double> crossProduct(std::vector<double> vect_A, std::vector<double> vect_B);
+double areaTriangle(std::vector<double> cross_P);
 
 // REMOVE OLD CODE BEFORE SUBMISSION
-//double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<double>> &vertices,
-//                    std::vector<std::vector<int>> &face_indices);
+double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<double>> &vertices,
+                    std::vector<std::vector<int>> &face_indices);
 
 #endif //CJDEMO_VOLUME_H
