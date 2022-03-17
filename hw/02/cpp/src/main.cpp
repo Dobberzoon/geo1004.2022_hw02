@@ -38,7 +38,7 @@
 using json = nlohmann::json;
 
 
-double ax,ay,bx,by;
+//double ax,ay,bx,by;
 std::vector<std::vector<double>>vic;
 
 int   get_no_roof_surfaces(json &j);
@@ -47,6 +47,12 @@ void  visit_roofsurfaces(json &j);
 void no_of_floors (json &j);
 void vertices_roof(json &j);
 void  list_all_vertices01(json& j);
+void roofSurfaceArea (json& j);
+void extractPoly(json& j);
+//void orientation(north,norm);
+//std::vector<std::vector<double>>test={{-2,-5},{1,3},{-1,0}};
+std::vector<float>north={0,1,0};
+//std::vector<float>norm;
 
 float distance(double ax,double ay,double bx,double by)
 {
@@ -67,13 +73,30 @@ float heron(std::vector<std::vector<double>>vic){
     area=sqrt(sp*(sp-a)*(sp-b)*(sp-c));
     return area;
 }
+/*double ax0, ay0, bx0, by0, cx0, cy0;
+float heron(ax0,ay0,bx0,by0,cx0,cy0)
+{
+    float sp;
+    float a, b, c;
+    float area;
+    a=distance(ax0,ay0,bx0,by0);
+    b=distance(bx0,by0,cx0,cy0);
+    c=distance(cx0,cy0,ax0,ay0);
 
-double orientation(std::vector<double>norm){
+    sp=(a+b+c)/2;
+
+    area=sqrt(sp*(sp-a)*(sp-b)*(sp-c));
+    return area;
+}*/
+std::string orientation(std::vector<double>norm){
     std::string dir;
     double x=norm[0];
     double y=norm[1];
+    double z=norm[2];
 
 
+     if(z<0.1 && z>-0.1){dir="horizontal";}
+     else{
      if(x==0 && y>0) {dir="N";}
      else if(x<0 && y>0) {dir="NW";}
      else if(x<0 && y==0) {dir="W";}
@@ -82,9 +105,8 @@ double orientation(std::vector<double>norm){
      else if(y<0 && x>0) {dir="SE";}
      else if (y==0 && x>0) {dir="E";}
      else if (y>0 && x>0) {dir="NE";}
-     else if (x==0 && y==0) {dir="horizontal";}
-
-     std::cout<<dir;}
+     }
+     return dir;}
 
 std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices){
     // empty vector and empty variables to hold the normal later on
@@ -102,13 +124,13 @@ std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices){
 
     //double norm = std::sqrt( pow(nx, 2) + pow(ny, 2) + pow(nz, 2));
     normal = {nx, ny, nz};
-    std::cout << "normal vector: " << nx<< ", " << ny << ", " << nz << std::endl;
+    //std::cout << "normal vector: " << nx<< ", " << ny << ", " << nz << std::endl;
     return normal;
 }
 
 int main(int argc, const char * argv[]) {
   //-- reading the file with nlohmann json: https://github.com/nlohmann/json  
-  std::ifstream input("../../data/twob1.json");
+  std::ifstream input("../../data/myfile.city.json");
   json j;
   input >> j;
   input.close();
@@ -154,9 +176,10 @@ int main(int argc, const char * argv[]) {
   }*/
 
   //-- write to disk the modified city model (myfile.city.json)
-  std::ofstream o("myfile.city.json");
+  std::ofstream o("../../data/yone.json");
   o << j.dump(2) << std::endl;
   o.close();
+
   //float x=heron(test);
   //std::cout<<"simple heron "<<x;
   return 0;
@@ -401,13 +424,14 @@ void roofSurfaceArea(json &j) {
 
 void extractPoly(json &j) {
     for (auto &co: j["CityObjects"].items()) {
-
         for (auto &g: co.value()["geometry"]) {
             if (g["type"] == "Solid") {
                 std::cout<<"Orientation of surfaces of house"<<"\n";
+                int sem_index_extended=0;
                 for (int i = 0; i < g["boundaries"].size(); i++) {
                     for (int k = 0; k < g["boundaries"][i].size(); k++) {
                         int sem_index = g["semantics"]["values"][i][k];
+                        sem_index_extended = g["semantics"]["surfaces"].size();
                         //std::cout<<"Orientation of surfaces of house"<<"\n";
                         if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") ==
                             0) {
@@ -464,8 +488,13 @@ void extractPoly(json &j) {
                             /*for(int i=0; i<normie.size();i++){
                                 std::cout<<normie[i]<<' '<<"\n";
                             }*/
-                            orient=orientation(normie);
-                            std::cout<<orient<<"\n";
+                            std::cout<<"\n";
+                            std::cout<<orientation(normie);
+                            //std::cout<<orient<<"\n";
+                            g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
+                            g["semantics"]["surfaces"][sem_index_extended]["orientation"] = orientation(normie);
+                            g["semantics"]["values"][i][k] = sem_index_extended;
+                            sem_index_extended++;
                         }
                     }
 
