@@ -141,10 +141,10 @@ int main(int argc, const char * argv[]) {
     std::vector<double> crossP = crossProduct(vecA, vecB);
 
     std::cout << "CROSSP BRO: " << std::endl;
-    std::cout << "MAGNITUDE BRO: " << areaTriangle(crossP) << std::endl;
 
     for (auto i : crossP ) {std::cout << i << " ";}
 
+    std::cout << "MAGNITUDE BRO: " << areaTriangle(crossP) << std::endl;
     std::cout << std::endl;
 
 
@@ -281,7 +281,55 @@ void roofSurfaceArea(json &j) {
                             std::cout << std::endl;
                             std::cout << "points_set.size(): " << points_set.size() << std::endl;
 
+                            std::cout << "check all them vertices: " << std::endl;
+                            std::cout << "last vertex: " << g["boundaries"][i][k][0][g["boundaries"][i][k][0].size() - 1] << std::endl;
+                            for (auto index : g["boundaries"][i][k][0]) {
+                                if (index == g["boundaries"][i][k][0][g["boundaries"][i][k][0].size() - 1]) {
+                                    std::cout << "found it: " << index << std::endl;
+                                }
 
+                            }
+                            std::cout << std::endl;
+
+                            double areaSum;
+                            for (int e = 0; e < points_set.size(); e++) {
+                                std::vector<double> begin_v, end_v;
+                                std::vector<double> side1 = {0., 0., 0.};
+                                std::vector<double> side2 = {0., 0., 0.};
+                                if (e == (points_set.size() - 1)) {
+                                    begin_v = {points_set[e][0], points_set[e][1], points_set[e][2]};
+                                    end_v = {points_set[0][0], points_set[0][1], points_set[0][2]};
+                                    std::transform(begin_v.begin(), begin_v.end(), baryCenterFace.begin(),
+                                           side1.begin(), std::minus<double>());
+
+                                    std::transform(begin_v.begin(), begin_v.end(), end_v.begin(),
+                                           side2.begin(), std::minus<double>());
+
+                                    std::vector<double> crossP = crossProduct(side1, side2);
+                                    areaSum += areaTriangle(crossP);
+                                }
+                                else {
+                                    begin_v = {points_set[e][0], points_set[e][1], points_set[e][2]};
+                                    end_v = {points_set[e+1][0], points_set[e+1][1], points_set[e+1][2]};
+                                    std::transform(begin_v.begin(), begin_v.end(), baryCenterFace.begin(),
+                                                   side1.begin(), std::minus<double>());
+
+                                    std::transform(begin_v.begin(), begin_v.end(), end_v.begin(),
+                                                   side2.begin(), std::minus<double>());
+
+                                    std::vector<double> crossP = crossProduct(side1, side2);
+                                    areaSum += areaTriangle(crossP);
+                                }
+                            }
+
+                            /*for (int e = 0; e < g["boundaries"][i][k][0].size(); e++) {
+                                if (g["boundaries"][i][k][0][e] == g["boundaries"][i][k][0][g["boundaries"][i][k][0].size() - 1]) {
+//                                    std::cout << "found it: " << g["boundaries"][i][k][0][e] << std::endl;
+                                }
+                                else {
+
+                                }
+                            }*/
 
 /*                            std::vector<std::vector<double>> triangle;
                             std::vector<double> a, b, c;
