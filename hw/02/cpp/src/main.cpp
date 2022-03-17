@@ -71,12 +71,14 @@ double heron (std::vector<std::vector<double>> triangle) {
 int main(int argc, const char * argv[]) {
 
     //-- reading the file with nlohmann json: https://github.com/nlohmann/json
-    std::ifstream input("../../data/NL.IMBAG.Pand.0503100000017003-0_original_upgraded.city.json");
+    // non- triangulated for area per polygon (and later also orientation
+    std::ifstream input("../../data/3dbag_cleaned.city.json");
     json j;
     input >> j;
     input.close();
 
-    std::ifstream input2("../../data/3dbag_v210908_fd2cee53_5910.json");
+    // triangulated file for no-floors and volume
+    std::ifstream input2("../../data/3dbag_cleaned_triangulated.city.json");
     json j2;
     input2 >> j2;
     input2.close();
@@ -124,10 +126,10 @@ int main(int argc, const char * argv[]) {
 
 
     // Get volume of all CityObjects, and update the cityjson
-    getCOVolumes(j);
+    getCOVolumes(j2);
 
     // Get number of floors of all CityObjects, and update the cityjson
-    getCOBuildingHeights(j);
+    getCOBuildingHeights(j2);
 
     roofSurfaceArea(j);
 
@@ -149,9 +151,14 @@ int main(int argc, const char * argv[]) {
 
 
     //-- write to disk the modified city model (myfile.city.json)
-    std::ofstream o("../../data/NL.IMBAG.Pand.0503100000017003-0_original_upgraded+volume+floor+area.json");
+    std::ofstream o("../../data/3dbag_original_upgraded+area.json");
     o << j.dump(2) << std::endl;
     o.close();
+
+    //-- write to disk the modified city model (myfile.city.json)
+    std::ofstream o2("../../data/3dbag_triangulated+volume+floor.json");
+    o2 << j2.dump(2) << std::endl;
+    o2.close();
 
     return 0;
 }
@@ -291,7 +298,7 @@ void roofSurfaceArea(json &j) {
                             }
                             std::cout << std::endl;
 
-                            double areaSum;
+                            double areaSum = 0.;
                             for (int e = 0; e < points_set.size(); e++) {
                                 std::vector<double> begin_v, end_v;
                                 std::vector<double> side1 = {0., 0., 0.};
@@ -321,6 +328,12 @@ void roofSurfaceArea(json &j) {
                                     areaSum += areaTriangle(crossP);
                                 }
                             }
+                            std::cout << "areaSum: " << areaSum << std::endl;
+
+                            g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
+                            g["semantics"]["surfaces"][sem_index_extended]["area"] = areaSum;
+                            g["semantics"]["values"][i][k] = sem_index_extended;
+                            sem_index_extended++;
 
                             /*for (int e = 0; e < g["boundaries"][i][k][0].size(); e++) {
                                 if (g["boundaries"][i][k][0][e] == g["boundaries"][i][k][0][g["boundaries"][i][k][0].size() - 1]) {
