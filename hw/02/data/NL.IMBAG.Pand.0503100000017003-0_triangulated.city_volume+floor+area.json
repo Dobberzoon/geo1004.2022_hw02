@@ -8,7 +8,7 @@
         "uniqueFeatureCount": 1
       }
     },
-    "citymodelIdentifier": "ce566715-199d-42a2-91d0-c3dd8a6ebe41",
+    "citymodelIdentifier": "0daa1156-b135-4a81-ab1f-fed3d94651c8",
     "datasetCharacterSet": "UTF-8",
     "datasetReferenceDate": "2022-03-17",
     "datasetTopicCategory": "geoscientificInformation",
@@ -1273,6 +1273,46 @@
               {
                 "on_footprint_edge": false,
                 "type": "WallSurface"
+              },
+              {
+                "area": 8.956315121980795,
+                "type": "RoofSurface"
+              },
+              {
+                "area": 9.378581172531545,
+                "type": "RoofSurface"
+              },
+              {
+                "area": 11.167042758197953,
+                "type": "RoofSurface"
+              },
+              {
+                "area": 11.626843845452491,
+                "type": "RoofSurface"
+              },
+              {
+                "area": 12.40704947156262,
+                "type": "RoofSurface"
+              },
+              {
+                "area": 12.47488573128648,
+                "type": "RoofSurface"
+              },
+              {
+                "area": 14.064298805311205,
+                "type": "RoofSurface"
+              },
+              {
+                "area": 14.14022674387416,
+                "type": "RoofSurface"
+              },
+              {
+                "area": 16.203627105794823,
+                "type": "RoofSurface"
+              },
+              {
+                "area": 28.1531144950551,
+                "type": "RoofSurface"
               }
             ],
             "values": [
@@ -1311,16 +1351,16 @@
                 2,
                 2,
                 2,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
               ]
             ]
           },
