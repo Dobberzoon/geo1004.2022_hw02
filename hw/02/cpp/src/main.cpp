@@ -95,7 +95,7 @@ std::string orientation(std::vector<double>norm){
     //double z=norm[2];
 
 //based on the x, y values of the normal, we decide which quadrant the orientation is
-     if(fabs(x)<0.001 && fabs(y)<0.001){dir="horizontal";}
+     if(fabs(x)<2 && fabs(y)<2){dir="horizontal";}
      else{
      if(x<0. && y>0. && fabs(y)>=fabs(x)) {dir="NW";}
      else if(x<0. && y>0. && fabs(x)>fabs(y)) {dir="WN";}
@@ -427,6 +427,7 @@ void extractPoly(json &j) {
         for (auto &g: co.value()["geometry"]) {
             if (g["type"] == "Solid") {
                 std::cout<<"Orientation of surfaces of house"<<"\n";
+                std::cout << co.key() << std::endl;
                 int sem_index_extended=0;
                 for (int i = 0; i < g["boundaries"].size(); i++) {
                     for (int k = 0; k < g["boundaries"][i].size(); k++) {
@@ -434,10 +435,34 @@ void extractPoly(json &j) {
                         sem_index_extended = g["semantics"]["surfaces"].size();
                         //std::cout<<"Orientation of surfaces of house"<<"\n";
                         if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") ==
-                            0) {
-                            double orient;
-                            std::vector<std::vector<double>> coords;
-                            int ax, ay, az, bx, by, bz, cx, cy, cz;
+                            0)
+                        {
+                            std::vector<std::vector<double>> points_set;
+
+                            for (auto i : g["boundaries"][i][k][0]) {
+                                std::vector<double> xyz;
+                                double x, y, z;
+                                x = (j["vertices"][i.get<int>()][0].get<int>() * j["transform"]["scale"][0].get<double>())
+                                    + j["transform"]["translate"][0].get<double>();
+                                y = (j["vertices"][i.get<int>()][1].get<int>() * j["transform"]["scale"][1].get<double>())
+                                    + j["transform"]["translate"][1].get<double>();
+                                z = (j["vertices"][i.get<int>()][2].get<int>() * j["transform"]["scale"][2].get<double>())
+                                    + j["transform"]["translate"][2].get<double>();
+                                //std::cout << "xyz: " << x << " " << y << " " << z << std::endl;
+                                xyz = {x, y, z};
+                                points_set.emplace_back(xyz);
+
+                            }
+                            std::vector<double>normie= surfaceNormal(points_set);
+                            /*for(int i=0; i<normie.size();i++){
+                                std::cout<<normie[i]<<' '<<"\n";}*/
+
+                            std::cout<<orientation(normie)<<" "<<"\n";
+
+                            //double orient;
+                            //std::vector<std::vector<double>> coords;
+
+                            /*int ax, ay, az, bx, by, bz, cx, cy, cz;
                             double p1x, p1y, p1z, p2x, p2y, p2z, p3x, p3y, p3z;
 
                             ax = j["vertices"][g["boundaries"][i][k][0][0].get<int>()][0].get<int>();
@@ -476,20 +501,20 @@ void extractPoly(json &j) {
                             std::vector<double> P1 = {p1x, p1y, p1z};
                             std::vector<double> P2 = {p2x, p2y, p2z};
                             std::vector<double> P3 = {p3x, p3y, p3z};
-                            coords.emplace_back(P1);
-                            coords.emplace_back(P2);
                             coords.emplace_back(P3);
+                            coords.emplace_back(P2);
+                            coords.emplace_back(P1);
                             /*for (auto i:coords){
                                 for(auto j:i){
                                 std::cout<<j<<" ";
                                 std::cout<<"\n";}}*/
-                            std::vector<double>normie= surfaceNormal(coords);
+                            /*std::vector<double>normie= surfaceNormal(coords);
 
-                            /*for(int i=0; i<normie.size();i++){
+                            for(int i=0; i<normie.size();i++){
                                 std::cout<<normie[i]<<' '<<"\n";
-                            }*/
+                            }
                             std::cout<<"\n";
-                            std::cout<<orientation(normie);
+                            std::cout<<orientation(normie)<<" "<<"\n";*/
                             //std::cout<<orient<<"\n";
                             g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
                             g["semantics"]["surfaces"][sem_index_extended]["orientation"] = orientation(normie);
