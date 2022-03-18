@@ -49,7 +49,9 @@ void    roof_orientation(json &j); // using the Newells method
 int main(int argc, const char * argv[]) {
 
     //-- reading the file with nlohmann json: https://github.com/nlohmann/json
-    std::ifstream input("../../data/twobuildings.city.json");
+//    std::ifstream input("../../data/twobuildings.city.json");
+    std::ifstream input("3dbag_org-tri_merged_volumefloorarea.city.json");
+
     json j;
     input >> j;
     input.close();
@@ -191,10 +193,16 @@ void list_all_vertices(json& j) {
 }
 
 void get_building_floors(json &j) {
+
+/*  This is the function to calculate the number of floors in the building based on the cityObject attributes for each objects:
+ *  The attributes that are needed: h_dak_min, h_dak_max, m_maaiveld
+ *  INPUT: &j (json)
+ *  OUTPUT: no_floors (int)
+ */
+
     float dak_min, dak_max, dak_dif, maaiveld, h_from_ground ;
     int no_floors;
     for (auto &co: j["CityObjects"].items()) {
-//        std::cout << "CityObject: " << co.key() << std::endl;
         if (co.value()["type"] == "Building") {
             std::cout << co.key() << std::endl;
             dak_min = co.value()["attributes"]["h_dak_min"];
@@ -208,31 +216,14 @@ void get_building_floors(json &j) {
             std::cout << "Maaiveld: " << maaiveld << std::endl;
             std::cout << "Height from Ground: " << h_from_ground << std::endl;
 
+            // Check if the difference between the difference in the tolerance of 87%, which corresponds to 2.6m and will count as one floor
             if (dak_dif / ceil(dak_dif) >= 0.87) {
                 no_floors = ceil(dak_dif);
             }
-            else {no_floors = dak_dif;
-            }
+            else {no_floors = dak_dif;}
 
             std::cout << "No of Floors: " << no_floors << std::endl;
             std::cout << std::endl;
         }
     }
 }
-
-//for (auto& co : j["CityObjects"].items()) {
-//std::cout << "= CityObject: " << co.key() << std::endl;
-//for (auto& g : co.value()["geometry"]) {
-
-//        for (auto &co: j["CityObjects"]) {
-//            if (co["type"] == "Building") {
-//            std::cout << "= CityObject: " << co.key() << std::endl;
-//                dak_min = co["attributes"]["h_dak_min"];
-//                dak_max = co["attributes"]["h_dak_max"];
-//                maaiveld = co["attributes"]["h_maaiveld"];
-//                dak_dif = ((0.7 * (dak_max - dak_min)) - maaiveld) / 3.0;
-//                dak_dif = ceil(dak_dif);
-//                std::cout << "building height: " << dak_dif << std::endl;
-////            }
-//        }
-//    }
