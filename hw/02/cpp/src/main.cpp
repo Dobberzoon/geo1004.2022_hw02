@@ -94,17 +94,17 @@ std::string orientation(std::vector<double>norm){
     double y=norm[1];
     double z=norm[2];
 
-
+//based on the x, y values of the normal, we decide which quadrant the orientation is
      if(z<0.1 && z>-0.1){dir="horizontal";}
      else{
-     if(x==0 && y>0) {dir="N";}
-     else if(x<0 && y>0) {dir="NW";}
-     else if(x<0 && y==0) {dir="W";}
-     else if(x<0 && y<0) {dir="SW";}
-     else if(x==0 && y<0) {dir="S";}
-     else if(y<0 && x>0) {dir="SE";}
-     else if (y==0 && x>0) {dir="E";}
-     else if (y>0 && x>0) {dir="NE";}
+     if(x<0. && y>0. && fabs(y)> fabs(x)) {dir="NW";}
+     else if(x<0. && y>0. && fabs(x)>fabs(y)) {dir="WN";}
+     else if(x<0. && y<0. && fabs(x)>fabs(y)) {dir="WS";}
+     else if(x<0. && y<0. && fabs(y)>fabs(x)) {dir="SW";}
+     else if(x>0. && y<0. && fabs(y)>fabs(x)) {dir="SE";}
+     else if(y<0. && x>0. && fabs(x)>fabs(y)) {dir="ES";}
+     else if (y>0. && x>0. && fabs(x)>fabs(y)) {dir="EN";}
+     else if (y>0. && x>0. && fabs(y)>fabs(x)) {dir="NE";}
      }
      return dir;}
 
