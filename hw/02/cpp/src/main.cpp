@@ -92,19 +92,19 @@ std::string orientation(std::vector<double>norm){
     std::string dir;
     double x=norm[0];
     double y=norm[1];
-    double z=norm[2];
+    //double z=norm[2];
 
 //based on the x, y values of the normal, we decide which quadrant the orientation is
-     if(z<0.1 && z>-0.1){dir="horizontal";}
+     if(fabs(x)<0.001 && fabs(y)<0.001){dir="horizontal";}
      else{
-     if(x<0. && y>0. && fabs(y)> fabs(x)) {dir="NW";}
+     if(x<0. && y>0. && fabs(y)>=fabs(x)) {dir="NW";}
      else if(x<0. && y>0. && fabs(x)>fabs(y)) {dir="WN";}
      else if(x<0. && y<0. && fabs(x)>fabs(y)) {dir="WS";}
-     else if(x<0. && y<0. && fabs(y)>fabs(x)) {dir="SW";}
-     else if(x>0. && y<0. && fabs(y)>fabs(x)) {dir="SE";}
+     else if(x<0. && y<0. && fabs(y)>=fabs(x)) {dir="SW";}
+     else if(x>0. && y<0. && fabs(y)>=fabs(x)) {dir="SE";}
      else if(y<0. && x>0. && fabs(x)>fabs(y)) {dir="ES";}
      else if (y>0. && x>0. && fabs(x)>fabs(y)) {dir="EN";}
-     else if (y>0. && x>0. && fabs(y)>fabs(x)) {dir="NE";}
+     else if (y>0. && x>0. && fabs(y)>=fabs(x)) {dir="NE";}
      }
      return dir;}
 
