@@ -1,6 +1,6 @@
 #include "newattributes.h"
 
-
+// Volume
 void subMatrix(double (&mat)[N][N], double (&temp)[N][N], int p, int q, int n) {
     /*
         Fills a submatrix, a sub-process of function determinantOfMatrix(...).
@@ -56,46 +56,6 @@ void fillMatrix4x4(double (&mat)[N][N], std::vector<std::vector<double>> &vertic
     }
 }
 
-void readObj(std::string &file_in, std::vector<std::vector<double>> &vertices, std::vector<std::vector<int>> &face_indices) {
-    /*
-        readObj reads .obj file formats, and separates the vertices (x,y,z) from the faces('s indices) into
-        two vectors. These two vectors can then be used for further processing.
-
-        Input:  - (filepath to) .obj
-                - two empty vectors for the vertices and face indices of types Vertex and int, respectively
-
-        Output: - void function, stores output into passed vectors.
-     */
-    std::ifstream stream_in;
-    stream_in.open(file_in); // open file
-
-    if (stream_in.is_open()) {
-        std::string line;
-
-        while (getline(stream_in, line)) {
-            std::istringstream iss(line);
-            std::string word;
-            iss >> word;
-
-            // Extract all the vertices in the .obj, and store in vector vertices
-            if (word == "v") {
-                std::vector<double> coordinates;
-                while (iss >> word) coordinates.push_back(std::stof(word));
-                if (coordinates.size() == 3) vertices.emplace_back(coordinates);
-                else vertices.emplace_back();
-            }
-
-            // Extract all the faces('s indices) in the .obj, and store in vector face_indices
-            if (word == "f") {
-                std::vector<int> face;
-                while (iss >> word) face.emplace_back(std::stoi(word) - 1);
-                face_indices.push_back(face);
-            }
-        }
-    }
-    stream_in.close();
-}
-
 double volumeTetra(double &determinant) {
     /*
         VolumeTetra is a tetrahedron (3-simplex) specific function to calculate its volume.
@@ -106,41 +66,12 @@ double volumeTetra(double &determinant) {
     return result;
 }
 
-double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<double>> &vertices_object,
-                    std::vector<std::vector<int>> &face_indices_object) {
-    /*
-        volumeObject takes an outside point and triangulated surfaces of an object to calculate the volume
-        of said object. This is achieved by summation of signed volumes of corresponding tetrahedra of object
-        surface triangles and outside point.
-
-        Input:  - Outside point (eg extreme of data extent +/- a margin), in vorm of a coordinate vector.
-                - vertex list of (triangulated) object
-                - surfaces list of (triangulated) object
-        Output: - volume (in given units, double precision)
-     */
-    double result = 0.;
-    for (auto i : face_indices_object) {
-        std::vector<std::vector<double>> vertices_current;
-        for (auto j : i) {
-            std::vector<double> vertex;
-            for (auto k : vertices_object[j]) {
-                vertex.emplace_back(k);
-            }
-            vertices_current.emplace_back(vertex);
-        }
-        vertices_current.emplace_back(outside_point);
-        double mat_tetra_current[N][N];
-        fillMatrix4x4(mat_tetra_current, vertices_current, N);
-        double determinant_tetra_current = determinantOfMatrix(mat_tetra_current, N);
-        result += volumeTetra(determinant_tetra_current);
-    }
-    return result;
-}
-
 void getCOVolumes(json &j) {
     /*
         getVolumeAllObjects calculates the volume of each Building (CityObject) in a given cityjson file directly,
-        and writes it as the attribute "volume" to each CityObject in m^3
+        and writes it as the attribute "volume" to each CityObject in m^3. This function takes an outside point and
+        triangulated surfaces of an object to calculate the volume of said object. This is achieved by summation of
+        signed volumes of corresponding tetrahedra of object surface triangles and outside point.
 
         Input:  - cityjson
         Output: - void, adds attribute volume to Building objects in cityjson
@@ -188,12 +119,9 @@ void getCOVolumes(json &j) {
                             Y3 = (y3 * j["transform"]["scale"][1].get<double>()) + j["transform"]["translate"][1].get<double>();
                             Z3 = (z3 * j["transform"]["scale"][2].get<double>()) + j["transform"]["translate"][2].get<double>();
 
-                            vertex_cur1 = {X1, Y1, Z1};
-                            vertices_current.emplace_back(vertex_cur1);
-                            vertex_cur2 = {X2, Y2, Z2};
-                            vertices_current.emplace_back(vertex_cur2);
-                            vertex_cur3 = {X3, Y3, Z3};
-                            vertices_current.emplace_back(vertex_cur3);
+                            vertex_cur1 = {X1, Y1, Z1}; vertices_current.emplace_back(vertex_cur1);
+                            vertex_cur2 = {X2, Y2, Z2}; vertices_current.emplace_back(vertex_cur2);
+                            vertex_cur3 = {X3, Y3, Z3}; vertices_current.emplace_back(vertex_cur3);
                             vertices_current.emplace_back(outside_point);
 
                             double mat_tetra_current[N][N];
@@ -210,42 +138,79 @@ void getCOVolumes(json &j) {
     }
 }
 
+// Number of floors
 void getCOBuildingHeights(json &j) {
-    float dak_min, dak_max, dak_dif, maaiveld, h_from_ground ;
+    /*
+        This is the function to calculate the number of floors in the building based on the cityObject attributes for each objects:
+        The attributes that are needed: h_dak_min, h_dak_max, m_maaiveld
+
+        Input:  - &j (json)
+        Output: - no_floors (int)
+     */
+    double dak_min, dak_max, dak_dif, maaiveld;
     int no_floor;
 
     for (auto &co: j["CityObjects"].items()) {
-//        std::cout << "CityObject: " << co.key() << std::endl;
+
         if (co.value()["type"] == "Building" && co.value()["attributes"]["dak_type"] != "no points"){
-//            std::cout << co.key() << std::endl;
-//            std::cout << co.value()["attributes"]["dak_type"] << "\n";
+
             dak_min = co.value()["attributes"]["h_dak_min"];
             dak_max = co.value()["attributes"]["h_dak_max"];
             maaiveld = co.value()["attributes"]["h_maaiveld"];
-            h_from_ground = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld);
             dak_dif = ((((dak_max - dak_min) * 0.7) + dak_min) - maaiveld) / 3.0;
 
-            //std::cout << "Dak Max: " << dak_max << std::endl;
-            //std::cout << "Dak Min: " << dak_min << std::endl;
-            //std::cout << "Maaiveld: " << maaiveld << std::endl;
-            //std::cout << "Height from Ground: " << h_from_ground << std::endl;
-
-
+            // Check if the difference between the difference in the tolerance of 87%,
+            // which corresponds to 2.6m and will count as one floor
             if (dak_dif / ceil(dak_dif) >= 0.87) {no_floor = ceil(dak_dif);}
             else {no_floor = dak_dif;}
 
-            //std::cout << "No of Floors: " << no_floor << std::endl;
-
-            //std::cout << std::endl;
+            // write value to json file
             co.value()["attributes"]["no_floor"] = no_floor;
         }
-
     }
-
 }
 
-std::vector<double> crossProduct(std::vector<double> vect_A, std::vector<double> vect_B) {
+// Orientation
+std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices){
+    // Surface normal calculation of a given polygon using Newell's method.
+    std::vector<double> normal(3);
+    double nx = 0., ny = 0., nz = 0.;
 
+    for (int v = 0; v < vertices.size(); v++){
+        std::vector<double> current = vertices[v];
+        std::vector<double> next = vertices[(v+1)%vertices.size()];
+        nx += (current[1] - next[1]) * (current[2] + next[2]);
+        ny += (current[2] - next[2]) * (current[0] + next[0]);
+        nz += (current[0] - next[0]) * (current[1] + next[1]);
+    }
+    normal = {nx, ny, nz};
+    return normal;
+}
+
+std::string interCardinal(std::vector<double> normal) {
+    // The orientation is determined by the value of a normal's x and y values, deriving one of the 8 quadrant parts.
+    // The 8 mapped quadrant parts relate to the 8 possible intercardinal directions.
+    std::string dir;
+    double x = normal[0];
+    double y = normal[1];
+
+    if (fabs(x) < 2. && fabs(y) < 2.){dir="horizontal";}
+    else{
+        if (     x < 0. && y > 0. && fabs(y) >= fabs(x)) {dir="NW";}
+        else if (x < 0. && y > 0. && fabs(x) >  fabs(y)) {dir="WN";}
+        else if (x < 0. && y < 0. && fabs(x) >  fabs(y)) {dir="WS";}
+        else if (x < 0. && y < 0. && fabs(y) >= fabs(x)) {dir="SW";}
+        else if (x > 0. && y < 0. && fabs(y) >= fabs(x)) {dir="SE";}
+        else if (y < 0. && x > 0. && fabs(x) >  fabs(y)) {dir="ES";}
+        else if (y > 0. && x > 0. && fabs(x) >  fabs(y)) {dir="EN";}
+        else if (y > 0. && x > 0. && fabs(y) >= fabs(x)) {dir="NE";}
+    }
+    return dir;
+}
+
+// Area
+std::vector<double> crossProduct(std::vector<double> vect_A, std::vector<double> vect_B) {
+    // Calculate cross product of two given vectors.
     std::vector<double> cross_P;
     cross_P.emplace_back(vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1]);
     cross_P.emplace_back(vect_A[2] * vect_B[0] - vect_A[0] * vect_B[2]);
@@ -254,7 +219,7 @@ std::vector<double> crossProduct(std::vector<double> vect_A, std::vector<double>
 }
 
 double areaTriangle(std::vector<double> cross_P) {
-
+    // Area of a triangle by taking half of the area of a parallelogram formed by two given vectors
     double magnitude, area;
     cross_P[0] = (cross_P[0] * cross_P[0]);
     cross_P[1] = (cross_P[1] * cross_P[1]);
@@ -264,45 +229,12 @@ double areaTriangle(std::vector<double> cross_P) {
     return area;
 }
 
-// getCOAreas(json &j) {
+double distance (std::vector<double> begin_v, std::vector<double> end_v) {
+    // Calculate distance between two given vectors (eg to calculate length of an edge)
+    std::vector<double> side = {0., 0., 0.};
+    std::transform(begin_v.begin(), begin_v.end(), end_v.begin(),
+                   side.begin(), std::minus<double>());
 
-//}
-
-// OLD CODE, TO BE REMOVED FOR FINAL VERSION:
-
-/*
-double volumeObject(std::vector<double> &outside_point, std::vector<std::vector<double>> &vertices_object,
-                    std::vector<std::vector<int>> &face_indices_object) { */
-    /*
-        volumeObject takes an outside point and triangulated surfaces of an object to calculate the volume
-        of said object. This is achieved by summation of signed volumes of corresponding tetrahedra of object
-        surface triangles and outside point.
-
-        Input:  - Outside point (eg extreme of data extent +/- a margin), in vorm of a coordinate vector.
-                - vertex list of (triangulated) object
-                - surfaces list of (triangulated) object
-        Output: - volume (in given units, double precision)
-     */
-
-
-/*
-double result = 0.;
-for (auto i : face_indices_object) {
-std::vector<std::vector<double>> vertices_current;
-for (auto j : i) {
-std::vector<double> vertex;
-for (auto k : vertices_object[j]) {
-vertex.emplace_back(k);
+    double result = sqrt((side[0]*side[0]) + (side[1] * side[1]) + (side[2] * side[2]));
+    return result;
 }
-vertices_current.emplace_back(vertex);
-}
-vertices_current.emplace_back(outside_point);
-double mat_tetra_current[N][N];
-fillMatrix4x4(mat_tetra_current, vertices_current, N);
-double determinant_tetra_current = determinantOfMatrix(mat_tetra_current, N);
-result += volumeTetra(determinant_tetra_current);
-}
-return result;
-}
- */
-
