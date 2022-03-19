@@ -1,0 +1,5 @@
+draft_code_roofSurfaces
+hw/02/.idea/*
+hw/02/cpp/build/*
+hw/02/cpp/cmake-build-debug/*
+hw/02/cpp/cmake-build-release/*
