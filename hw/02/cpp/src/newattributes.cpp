@@ -1,7 +1,7 @@
 #include "newattributes.h"
 
 // Volume
-void subMatrix(double (&mat)[N][N], double (&temp)[N][N], int p, int q, int n) {
+void subMatrix (double (&mat)[N][N], double (&temp)[N][N], int p, int q, int n) {
     /*
         Fills a submatrix, a sub-process of function determinantOfMatrix(...).
      */
@@ -22,7 +22,7 @@ void subMatrix(double (&mat)[N][N], double (&temp)[N][N], int p, int q, int n) {
     }
 }
 
-double determinantOfMatrix(double (&matrix)[N][N], int n) {
+double determinantOfMatrix (double (&matrix)[N][N], int n) {
     /*
         Calculates the determinant of a matrix of size n.
 
@@ -46,7 +46,7 @@ double determinantOfMatrix(double (&matrix)[N][N], int n) {
     return determinant;
 }
 
-void fillMatrix4x4(double (&mat)[N][N], std::vector<std::vector<double>> &vertices, int n){
+void fillMatrix4x4 (double (&mat)[N][N], std::vector<std::vector<double>> &vertices, int n){
     // filling matrix from obj vertex list (will be similar to vertex list from json)
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -56,7 +56,7 @@ void fillMatrix4x4(double (&mat)[N][N], std::vector<std::vector<double>> &vertic
     }
 }
 
-double volumeTetra(double &determinant) {
+double volumeTetra (double &determinant) {
     /*
         VolumeTetra is a tetrahedron (3-simplex) specific function to calculate its volume.
         Input:  - determinant (double)
@@ -66,7 +66,7 @@ double volumeTetra(double &determinant) {
     return result;
 }
 
-void getCOVolumes(json &j) {
+void getCOVolumes (json &j) {
     /*
         getVolumeAllObjects calculates the volume of each Building (CityObject) in a given cityjson file directly,
         and writes it as the attribute "volume" to each CityObject in m^3. This function takes an outside point and
@@ -81,20 +81,13 @@ void getCOVolumes(json &j) {
                                           j["metadata"]["geographicalExtent"][2].get<double>() - 1.};
 
     for (auto& co : j["CityObjects"].items()) {
-
-        int count_children2 = 0;
         if (co.value()["type"] == "Building") {
             double volume = 0.;
-
             for (auto& i : co.value()["children"]) {
-                count_children2++;
-
                 for (auto& g : j["CityObjects"][i.get<std::string>()]["geometry"]) {
-                    int count_loop = 0;
                     for (int i = 0; i < g["boundaries"].size(); i++) {
                         for (int k = 0; k < g["boundaries"][i].size(); k++) {
                             std::vector<std::vector<double>> vertices_current;
-                            count_loop++;
                             std::vector<double> vertex_cur1; std::vector<double> vertex_cur2; std::vector<double> vertex_cur3;
 
                             int x1, x2, x3, y1, y2, y3, z1, z2, z3;
@@ -136,10 +129,11 @@ void getCOVolumes(json &j) {
             co.value()["attributes"]["volume"] = std::to_string(volume);
         }
     }
+
 }
 
 // Number of floors
-void getCOBuildingHeights(json &j) {
+void getCONoFloors (json &j) {
     /*
         This is the function to calculate the number of floors in the building based on the cityObject attributes for each objects:
         The attributes that are needed: h_dak_min, h_dak_max, m_maaiveld
@@ -171,7 +165,24 @@ void getCOBuildingHeights(json &j) {
 }
 
 // Orientation
-std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices){
+
+void collectPolygonPoints (json &j, json &g, int i, int k, std::vector<std::vector<double>> &points_set) {
+
+    for (auto i : g["boundaries"][i][k][0]) {
+        std::vector<double> xyz;
+        double x, y, z;
+        x = (j["vertices"][i.get<int>()][0].get<int>() * j["transform"]["scale"][0].get<double>())
+            + j["transform"]["translate"][0].get<double>();
+        y = (j["vertices"][i.get<int>()][1].get<int>() * j["transform"]["scale"][1].get<double>())
+            + j["transform"]["translate"][1].get<double>();
+        z = (j["vertices"][i.get<int>()][2].get<int>() * j["transform"]["scale"][2].get<double>())
+            + j["transform"]["translate"][2].get<double>();
+        xyz = {x, y, z};
+        points_set.emplace_back(xyz);
+    }
+}
+
+std::vector<double> surfaceNormal (std::vector<std::vector<double>> &vertices){
     // Surface normal calculation of a given polygon using Newell's method.
     std::vector<double> normal(3);
     double nx = 0., ny = 0., nz = 0.;
@@ -187,7 +198,7 @@ std::vector<double> surfaceNormal(std::vector<std::vector<double>> &vertices){
     return normal;
 }
 
-std::string interCardinal(std::vector<double> normal) {
+std::string interCardinal (std::vector<double> normal) {
     // The orientation is determined by the value of a normal's x and y values, deriving one of the 8 quadrant parts.
     // The 8 mapped quadrant parts relate to the 8 possible intercardinal directions.
     std::string dir;
@@ -209,7 +220,7 @@ std::string interCardinal(std::vector<double> normal) {
 }
 
 // Area
-std::vector<double> crossProduct(std::vector<double> vect_A, std::vector<double> vect_B) {
+std::vector<double> crossProduct (std::vector<double> vect_A, std::vector<double> vect_B) {
     // Calculate cross product of two given vectors.
     std::vector<double> cross_P;
     cross_P.emplace_back(vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1]);
@@ -218,7 +229,7 @@ std::vector<double> crossProduct(std::vector<double> vect_A, std::vector<double>
     return cross_P;
 }
 
-double areaTriangle(std::vector<double> cross_P) {
+double areaTriangle (std::vector<double> cross_P) {
     // Area of a triangle by taking half of the area of a parallelogram formed by two given vectors
     double magnitude, area;
     cross_P[0] = (cross_P[0] * cross_P[0]);
@@ -230,11 +241,101 @@ double areaTriangle(std::vector<double> cross_P) {
 }
 
 double distance (std::vector<double> begin_v, std::vector<double> end_v) {
-    // Calculate distance between two given vectors (eg to calculate length of an edge)
+    // Calculate distance between two given vector vertices (eg to calculate length of an edge)
     std::vector<double> side = {0., 0., 0.};
     std::transform(begin_v.begin(), begin_v.end(), end_v.begin(),
                    side.begin(), std::minus<double>());
 
     double result = sqrt((side[0]*side[0]) + (side[1] * side[1]) + (side[2] * side[2]));
     return result;
+}
+
+double areaPolygon (std::vector<std::vector<double>> &points_set) {
+    /*
+        areaPolygon finds the area by locally triangulating the polygon with finding its barycenter,
+        then each triangle's area is calculating by the half area of parallelogram method.
+
+        Input:  - Points of polygon (vector<vector<double>>)
+        Output: - area (double)
+     */
+
+    double areaSum = 0.;
+    // Face bary center
+    std::vector<double> baryCenterFace = {0., 0., 0.};
+    // Sum all point values
+    for (auto i : points_set) {
+        baryCenterFace[0] += i[0];
+        baryCenterFace[1] += i[1];
+        baryCenterFace[2] += i[2];
+    }
+    // Calculate barycenter by averaging all point values
+    for (int i = 0; i < baryCenterFace.size(); i++) {
+        baryCenterFace[i] = baryCenterFace[i] / points_set.size();
+    }
+
+    // Calculate area of polygon by triangulating the polygon,
+    // then calculate area of each triangle and sum all corresponding areas.
+    for (int e = 0; e < points_set.size(); e++) {
+        std::vector<double> begin_v, end_v;
+        std::vector<double> side1 = {0., 0., 0.};
+        std::vector<double> side2 = {0., 0., 0.};
+        if (e == (points_set.size() - 1)) {
+            begin_v = {points_set[e][0], points_set[e][1], points_set[e][2]};
+            end_v = {points_set[0][0], points_set[0][1], points_set[0][2]};
+            std::transform(begin_v.begin(), begin_v.end(), baryCenterFace.begin(),
+                           side1.begin(), std::minus<double>());
+
+            std::transform(begin_v.begin(), begin_v.end(), end_v.begin(),
+                           side2.begin(), std::minus<double>());
+
+            std::vector<double> crossP = crossProduct(side1, side2);
+            areaSum += areaTriangle(crossP);
+        }
+        else {
+            begin_v = {points_set[e][0], points_set[e][1], points_set[e][2]};
+            end_v = {points_set[e+1][0], points_set[e+1][1], points_set[e+1][2]};
+            std::transform(begin_v.begin(), begin_v.end(), baryCenterFace.begin(),
+                           side1.begin(), std::minus<double>());
+
+            std::transform(begin_v.begin(), begin_v.end(), end_v.begin(),
+                           side2.begin(), std::minus<double>());
+
+            std::vector<double> crossP = crossProduct(side1, side2);
+            areaSum += areaTriangle(crossP);
+        }
+    }
+    return areaSum;
+}
+
+void getCOAreaOrientation (json &j) {
+    for (auto &co: j["CityObjects"].items()) {
+        for (auto &g: co.value()["geometry"]) {
+            if (g["type"] == "Solid") {
+                int sem_index_extended;
+                for (int i = 0; i < g["boundaries"].size(); i++) {
+                    for (int k = 0; k < g["boundaries"][i].size(); k++) {
+                        int sem_index = g["semantics"]["values"][i][k];
+                        sem_index_extended = g["semantics"]["surfaces"].size();
+                        if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") == 0) {
+                            // Collect the boundary points
+                            std::vector<std::vector<double>> points_set;
+                            collectPolygonPoints(j, g, i, k, points_set);
+
+                            // Calculate area of current visiting polygon
+                            double area = areaPolygon(points_set);
+                            // Calculate normal of current visiting polygon
+                            std::vector<double> roof_normal = surfaceNormal(points_set);
+
+                            // Write calculated values to the json
+                            g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
+                            g["semantics"]["surfaces"][sem_index_extended]["area"] = area;
+                            g["semantics"]["surfaces"][sem_index_extended]["orientation"] = interCardinal(roof_normal);
+                            g["semantics"]["values"][i][k] = sem_index_extended;
+                            sem_index_extended++;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
