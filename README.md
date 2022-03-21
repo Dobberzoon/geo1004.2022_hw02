@@ -40,6 +40,7 @@ $ ./hw01
 
 
 ## Alternative build: simply use IDE of choice (e.g. CLion 2021.3)
+Open project ```geo1004.2022_hw02/hw/02```, then Project (explorer overview) open cpp folder, right-click ```CMakeLists.txt``` and click on ```Reload CMake Project```. A ```cmake-build-debug``` folder should appear, optionally add a release build. Open main.cpp
 
 
 ## Add own path for input dataset

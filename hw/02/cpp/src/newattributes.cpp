@@ -309,6 +309,7 @@ double areaPolygon (std::vector<std::vector<double>> &points_set) {
 
 void getCOAreaOrientation (json &j) {
     for (auto &co: j["CityObjects"].items()) {
+        double area_sum = 0.;
         for (auto &g: co.value()["geometry"]) {
             if (g["type"] == "Solid") {
                 int sem_index_extended;
@@ -323,6 +324,7 @@ void getCOAreaOrientation (json &j) {
 
                             // Calculate area of current visiting polygon
                             double area = areaPolygon(points_set);
+                            area_sum += area;
                             // Calculate normal of current visiting polygon
                             std::vector<double> roof_normal = surfaceNormal(points_set);
 
@@ -337,5 +339,6 @@ void getCOAreaOrientation (json &j) {
                 }
             }
         }
+        if (area_sum != 0.) {co.value()["attributes"]["area_sum"] = area_sum;}
     }
 }
