@@ -70,13 +70,13 @@ int main(int argc, const char * argv[]) {
 
     std::cout << "writing to disk";
     //-- write to disk the modified city model (myfile.city.json)
-    std::string file_out1 = "../../data/3dbag_original_upgraded+area+orientation_TEST3.json";
+    std::string file_out1 = "../../data/3dbag_original_upgraded+area+orientation_OUTIN.json";
     std::ofstream o(file_out1);
     o << j.dump(2) << std::endl;
     o.close();
 
     //-- write to disk the modified city model (myfile.city.json)
-    std::string file_out2 = "../../data/3dbag_triangulated+volume+floor_TEST3.json";
+    std::string file_out2 = "../../data/3dbag_triangulated+volume+floor_OUTIN.json";
     std::ofstream o2(file_out2);
     o2 << j2.dump(2) << std::endl;
     o2.close();
