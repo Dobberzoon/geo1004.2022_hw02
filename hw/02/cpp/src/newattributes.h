@@ -24,6 +24,8 @@ void getCONoFloors (json &j);
 
 // Orientation
 void collectPolygonPoints (json &j, json &g, int i, int k, std::vector<std::vector<double>> &points_set);
+void collectPolygonPointsInner (json &j, json &g, int i, int k, std::vector<std::vector<double>> &points_set);
+void collectPolygonPointsOuter (json &j, json &g, int i, int k, std::vector<std::vector<double>> &points_set);
 std::vector<double> surfaceNormal (std::vector<std::vector<double>> &vertices);
 std::string interCardinal (std::vector<double> normal);
 

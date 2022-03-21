@@ -182,6 +182,38 @@ void collectPolygonPoints (json &j, json &g, int i, int k, std::vector<std::vect
     }
 }
 
+void collectPolygonPointsInner (json &j, json &g, int i, int k, std::vector<std::vector<double>> &points_set) {
+
+    for (auto i : g["boundaries"][i][k][1]) {
+        std::vector<double> xyz;
+        double x, y, z;
+        x = (j["vertices"][i.get<int>()][0].get<int>() * j["transform"]["scale"][0].get<double>())
+            + j["transform"]["translate"][0].get<double>();
+        y = (j["vertices"][i.get<int>()][1].get<int>() * j["transform"]["scale"][1].get<double>())
+            + j["transform"]["translate"][1].get<double>();
+        z = (j["vertices"][i.get<int>()][2].get<int>() * j["transform"]["scale"][2].get<double>())
+            + j["transform"]["translate"][2].get<double>();
+        xyz = {x, y, z};
+        points_set.emplace_back(xyz);
+    }
+}
+
+void collectPolygonPointsOuter (json &j, json &g, int i, int k, std::vector<std::vector<double>> &points_set) {
+
+    for (auto i : g["boundaries"][i][k][0]) {
+        std::vector<double> xyz;
+        double x, y, z;
+        x = (j["vertices"][i.get<int>()][0].get<int>() * j["transform"]["scale"][0].get<double>())
+            + j["transform"]["translate"][0].get<double>();
+        y = (j["vertices"][i.get<int>()][1].get<int>() * j["transform"]["scale"][1].get<double>())
+            + j["transform"]["translate"][1].get<double>();
+        z = (j["vertices"][i.get<int>()][2].get<int>() * j["transform"]["scale"][2].get<double>())
+            + j["transform"]["translate"][2].get<double>();
+        xyz = {x, y, z};
+        points_set.emplace_back(xyz);
+    }
+}
+
 std::vector<double> surfaceNormal (std::vector<std::vector<double>> &vertices){
     // Surface normal calculation of a given polygon using Newell's method.
     std::vector<double> normal(3);
@@ -309,6 +341,7 @@ double areaPolygon (std::vector<std::vector<double>> &points_set) {
 
 void getCOAreaOrientation (json &j) {
     for (auto &co: j["CityObjects"].items()) {
+        double area_sum = 0.;
         for (auto &g: co.value()["geometry"]) {
             if (g["type"] == "Solid") {
                 int sem_index_extended;
@@ -316,13 +349,39 @@ void getCOAreaOrientation (json &j) {
                     for (int k = 0; k < g["boundaries"][i].size(); k++) {
                         int sem_index = g["semantics"]["values"][i][k];
                         sem_index_extended = g["semantics"]["surfaces"].size();
-                        if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") == 0) {
+                        if ((g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") == 0) &&
+                            (g["boundaries"][i][k].size() > 1)) {
+
+                            // Collect the boundary points
+                            std::vector<std::vector<double>> points_set_inner;
+                            std::vector<std::vector<double>> points_set_outer;
+                            collectPolygonPointsInner(j, g, i, k, points_set_inner);
+                            collectPolygonPointsOuter(j, g, i, k, points_set_outer);
+
+                            // Calculate area of current visiting polygon
+                            double area_inner = areaPolygon(points_set_inner);
+                            double area_outer = areaPolygon(points_set_outer);
+                            double area = area_outer - area_inner;
+                            area_sum += area;
+
+                            // Calculate normal of current visiting polygon
+                            std::vector<double> roof_normal = surfaceNormal(points_set_outer);
+
+                            // Write calculated values to the json
+                            g["semantics"]["surfaces"][sem_index_extended]["type"] = "RoofSurface";
+                            g["semantics"]["surfaces"][sem_index_extended]["area"] = area;
+                            g["semantics"]["surfaces"][sem_index_extended]["orientation"] = interCardinal(roof_normal);
+                            g["semantics"]["values"][i][k] = sem_index_extended;
+                            sem_index_extended++;
+                        }
+                        else if (g["semantics"]["surfaces"][sem_index]["type"].get<std::string>().compare("RoofSurface") == 0) {
                             // Collect the boundary points
                             std::vector<std::vector<double>> points_set;
                             collectPolygonPoints(j, g, i, k, points_set);
 
                             // Calculate area of current visiting polygon
                             double area = areaPolygon(points_set);
+                            area_sum += area;
                             // Calculate normal of current visiting polygon
                             std::vector<double> roof_normal = surfaceNormal(points_set);
 
@@ -337,5 +396,6 @@ void getCOAreaOrientation (json &j) {
                 }
             }
         }
+        if (area_sum != 0.) {co.value()["attributes"]["area_sum"] = area_sum;}
     }
 }
