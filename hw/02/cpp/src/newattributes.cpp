@@ -396,6 +396,6 @@ void getCOAreaOrientation (json &j) {
                 }
             }
         }
-        if (area_sum != 0.) {co.value()["attributes"]["area_sum"] = area_sum;}
+        //if (area_sum != 0.) {co.value()["attributes"]["area_sum"] = area_sum;} // this code is for analysis purposes
     }
 }
