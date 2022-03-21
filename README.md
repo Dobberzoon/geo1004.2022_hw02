@@ -68,4 +68,13 @@ $ cjio non-triangulated.city.json merge triangulated.city.json save merged_newat
 
 ## Provided dataset
 
-[placeholder]
+Example input:
+- 3dbag_cleaned.city.json
+- 3dbag_cleaned_triangulated.city.json
+
+Example output:
+- 3dbag_original_upgraded+area+orientation.json
+- 3dbag_triangulated+volume+floor.json
+
+Example final output (merged):
+- 3dbag_merged_volume+floor+area+orientation.city.json
