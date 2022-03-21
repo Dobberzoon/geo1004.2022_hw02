@@ -20,7 +20,7 @@ $ cjio 3dbag_v210908_fd2cee53_5910.json upgrade vertices_clean lod_filter 2.2 me
 More on ```cjio``` can be found here: https://github.com/cityjson/cjio
 
 ## Add own path for input dataset
-Change path for input_data location at lines 45 & 50, to link an upgraded 3dbag file and upgraded triangulated 3dbag file, accordingly. 
+Change path for input_data location at lines 45 & 50, to link an upgraded 3dbag file and upgraded triangulated 3dbag file, accordingly. Though with provided example data this is not needed.
 
 ## How to build from command line
 
@@ -57,6 +57,7 @@ $ ./hw02
 
 
 ## Alternative build: simply use IDE of choice (e.g. CLion 2021.3)
+Open project ```geo1004.2022_hw02/hw/02```, then in Project (explorer overview) open cpp folder, right-click ```CMakeLists.txt``` and click on ```Reload CMake Project```. A ```cmake-build-debug``` folder should appear, optionally add a release build. Open main.cpp and change paths if necessary as mentioned earlier.
 
 ## Postprocessing data instructions
 
